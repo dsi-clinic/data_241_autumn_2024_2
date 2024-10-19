@@ -1,4 +1,5 @@
 IMAGE_NAME=flask_notebook_app
+DATA_241_API_KEY ?= $(shell echo $$DATA_241_API_KEY)
 
 # Define phony targets
 .PHONY=build notebook interactive flask
@@ -10,23 +11,24 @@ build:
 # Start an interactive bash session with current directory mounted
 interactive: build
 	docker run -it \
-	-v $(shell pwd):/app/src \
-	$(IMAGE_NAME) /bin/bash
+		-v $(shell pwd):/app/src \
+		-e DATA-241-API-KEY=$(DATA_241_API_KEY) \
+		$(IMAGE_NAME) /bin/bash
 
 # Start an interactive Jupyter notebook with current directory mounted
 notebook: build
 	docker run -it -p 8888:8888 \
-	-v $(shell pwd):/app/src \
-	$(IMAGE_NAME) \
-	jupyter notebook --allow-root --no-browser \
-	--port 8888 --ip=0.0.0.0
+		-v $(shell pwd):/app/src \
+		$(IMAGE_NAME) \
+		jupyter notebook --allow-root --no-browser \
+		--port 8888 --ip=0.0.0.0
 
 # Start the Flask server
 flask: build
-    docker run -p 4000:5000 \
-    -e FLASK_APP=/app/src/app.py \
-    -e FLASK_DEBUG=1 \
-    -e FLASK_ENV=development \
-	-v $(shell pwd):/app/src \
-	$(IMAGE_NAME) \
-
+	docker run -p 4000:4000 \
+		-e FLASK_APP=/app/src/app.py \
+		-e FLASK_DEBUG=1 \
+		-e FLASK_ENV=development \
+		-e DATA-241-API-KEY=$(DATA_241_API_KEY) \
+		-v $(shell pwd):/app/src \
+		$(IMAGE_NAME)
