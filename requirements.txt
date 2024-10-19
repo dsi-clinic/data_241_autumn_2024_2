@@ -1,3 +1,4 @@
 pandas 
-
+jupyter==1.0.0
+Flask==3.0.3
 
