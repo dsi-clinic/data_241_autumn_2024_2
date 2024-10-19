@@ -9,4 +9,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY utils/eda_2019.py .
 COPY data/raw_data ./data/raw_data
 
-CMD ["python", "eda_2019.py"]
+# Below allows for more consistent printing
+ENV PYTHONUNBUFFERED=1
+
+CMD ["python", "eda_2019.py", "flask", "run", "--host=0.0.0.0"]
