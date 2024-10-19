@@ -39,7 +39,7 @@ def merge_daily_stock_data(zip_path):
     except Exception as e:
         raise RuntimeError(f"Error merging data: {e}")
 
-def main():
+def combine_data():
     """
     Combines NASDAQ and NYSE stock data and filters for BRK.A stock symbol.
 
@@ -80,7 +80,7 @@ def main():
     return total_rows, nasdaq_rows, nyse_rows, brk_a_date
 
 if __name__ == "__main__":
-    total_rows, nasdaq_rows, nyse_rows, brk_a_date = main()
+    total_rows, nasdaq_rows, nyse_rows, brk_a_date = combine_data()
 
     # Print results
     print(f"Total Rows: {total_rows}")
