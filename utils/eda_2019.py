@@ -1,81 +1,93 @@
+import os
 import pandas as pd
 import zipfile
 
-def mergedaily(zippath):
-  """
-  Input:
-  Zippath: path to zip file
+def merge_daily_stock_data(zip_path):
+    """
+    Merges all CSV files within a given zip file into a single DataFrame.
+    
+    Args:
+        zip_path (str): Path to the zip file containing stock data.
 
-  Process:
-  1. Unzips file in Zip file object
-  2. Gets a list of csv files within the zip file
-  3. Makes the DF using the first csv as the template
-  4. Loops through the csv files and appends to the template
-  5. Appends either NASDAQ or NYSE at the end
+    Returns:
+        pd.DataFrame: Merged DataFrame with all CSVs appended, with a 'market' column 
+                      indicating NASDAQ or NYSE based on the zip file name.
+                      
+    Raises:
+        FileNotFoundError: If the zip file is not found or invalid.
+    """
+    try:
+        with zipfile.ZipFile(zip_path, 'r') as zf:
+            csv_files = zf.namelist()
+            merged_df = pd.read_csv(zf.open(csv_files[0]))
+            
+            for csv_file in csv_files[1:]:
+                temp_df = pd.read_csv(zf.open(csv_file))
+                merged_df = pd.concat([merged_df, temp_df], ignore_index=True, sort=False)
+            
+            # Add 'market' column based on file name
+            if 'NASDAQ' in zip_path:
+                merged_df['market'] = 'NASDAQ'
+            elif 'NYSE' in zip_path:
+                merged_df['market'] = 'NYSE'
+            else:
+                merged_df['market'] = 'Unknown'
+                
+        return merged_df
+    except zipfile.BadZipFile:
+        raise FileNotFoundError(f"Invalid zip file: {zip_path}")
+    except Exception as e:
+        raise RuntimeError(f"Error merging data: {e}")
 
+def main():
+    """
+    Combines NASDAQ and NYSE stock data and filters for BRK.A stock symbol.
 
-  Output:
-  Merged dataframe containing merged CSV data from zip file
-  """
+    Process:
+    1. Loads separate DataFrames for NASDAQ and NYSE using the merge_daily_stock_data function.
+    2. Combines both DataFrames into a single DataFrame.
+    3. Filters for BRK.A stock symbol.
+    4. Finds the date where BRK.A had the highest 'Open' value.
+    5. Counts total, NASDAQ, and NYSE rows.
 
-  zf = zipfile.ZipFile(zippath)
-  zflist = zf.namelist()
-  zfdf = pd.read_csv(zf.open(zflist[0]))
-  for csv in zf.namelist()[1:]:
-    mergedf = pd.read_csv(zf.open(csv))
-    zfdf = pd.concat([zfdf, mergedf],
-                          ignore_index = True,
-                          sort = False)
-  if 'NASDAQ' in zippath:
-    zfdf['market'] = 'NASDAQ'
-  elif 'NYSE' in zippath:
-    zfdf['market'] = 'NYSE'
-  else:
-    zfdf['market'] = 'Not NYSE or NASDAQ'
+    Returns:
+        tuple: Total rows, NASDAQ rows, NYSE rows, and the BRK.A date with the highest 'Open'.
+    """
+    nasdaq_zip_path = './data/raw_data/NASDAQ_2019.zip'
+    nyse_zip_path = './data/raw_data/NYSE_2019.zip'
 
-  return zfdf
+    # Load data
+    nasdaq_df = merge_daily_stock_data(nasdaq_zip_path)
+    nyse_df = merge_daily_stock_data(nyse_zip_path)
 
+    # Combine NASDAQ and NYSE data
+    combined_df = pd.concat([nasdaq_df, nyse_df], ignore_index=True, sort=False)
 
+    # Filter for BRK.A stock
+    brk_a_df = combined_df[combined_df['Symbol'] == 'BRK.A']
 
-def __main__():
-  """
-  Input:
-  None
+    # Get the date where BRK.A had the highest 'Open' value
+    if not brk_a_df.empty:
+        brk_a_date = brk_a_df[brk_a_df['Open'] == max(brk_a_df['Open'])]['Date'].iloc[0]
+    else:
+        brk_a_date = None
 
-  Process:
-  1. Creates seperate DF for nasdaq and nysedf based on specified zip file path
-  using the mergedaily function above
-  2. Combines both DF
-  3. Creates BRK.A only DF
-  answers*
-  4. Filters BRK.A only DF for open max and indexes the date
-  5. Finds rows for individual and combined
+    # Row counts
+    total_rows = combined_df.shape[0]
+    nasdaq_rows = nasdaq_df.shape[0]
+    nyse_rows = nyse_df.shape[0]
 
-
-  Output:
-  Returns combinded rows, nasdaq rows, nyse rows, and BRK.A date
-  """
-
-  pathone = './data/raw_data/NASDAQ_2019.zip'
-  pathtwo = './data/raw_data/NYSE_2019.zip'
-
-  nasdaqdf = mergedaily(pathone)
-  nysedf = mergedaily(pathtwo)
-  combindeddf = pd.concat([nasdaqdf, nysedf],
-                          ignore_index = True,
-                          sort = False)
-
-  brka = combindeddf[combindeddf['Symbol']=='BRK.A']
-
-
-  brkadate = brka[brka['Open']==max( brka['Open'])]['Date'].iloc[0]
-  combindedrows = combindeddf.shape[0]
-  nasdaqrows = nasdaqdf.shape[0]
-  nyserows = nysedf.shape[0]
-
-  return f"Total Rows: {combindedrows}", f"Nasdaq Rows: {nasdaqrows}", f"NYSE Rows: {nyserows}", brkadate
+    return total_rows, nasdaq_rows, nyse_rows, brk_a_date
 
 if __name__ == "__main__":
-    results = __main__()
-    for result in results:
-        print(result)
+    total_rows, nasdaq_rows, nyse_rows, brk_a_date = main()
+
+    # Print results
+    print(f"Total Rows: {total_rows}")
+    print(f"Nasdaq Rows: {nasdaq_rows}")
+    print(f"NYSE Rows: {nyse_rows}")
+    
+    if brk_a_date:
+        print(f"BRK.A Max Open Date: {brk_a_date}")
+    else:
+        print("No BRK.A data found.")
