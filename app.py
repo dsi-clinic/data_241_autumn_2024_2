@@ -1,9 +1,14 @@
 import os
 import pandas as pd
 import zipfile
+import logging
 from flask import Flask, jsonify, request, abort
 
+# Initialize the Flask app
 app = Flask(__name__)
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
 def merge_daily_stock_data(zip_path):
     """
@@ -35,8 +40,10 @@ def merge_daily_stock_data(zip_path):
                 
         return df
     except zipfile.BadZipFile:
+        logging.error(f"Invalid zip file: {zip_path}")
         raise ValueError(f"Invalid zip file: {zip_path}")
     except Exception as e:
+        logging.error(f"Error merging data from {zip_path}: {e}")
         raise RuntimeError(f"Error merging data: {e}")
 
 def load_stock_data():
@@ -50,12 +57,18 @@ def load_stock_data():
         nasdaq_zip_path = os.environ.get('NASDAQ_ZIP_PATH', './data/raw_data/NASDAQ_2019.zip')
         nyse_zip_path = os.environ.get('NYSE_ZIP_PATH', './data/raw_data/NYSE_2019.zip')
 
+        logging.info("Loading NASDAQ data...")
         nasdaq_df = merge_daily_stock_data(nasdaq_zip_path)
+
+        logging.info("Loading NYSE data...")
         nyse_df = merge_daily_stock_data(nyse_zip_path)
         
+        logging.info("Combining NASDAQ and NYSE data...")
         combined_df = pd.concat([nasdaq_df, nyse_df], ignore_index=True, sort=False)
+
         return combined_df
     except Exception as e:
+        logging.error(f"Error loading stock data: {e}")
         raise RuntimeError(f"Error loading stock data: {e}")
 
 def authenticate_request():
@@ -69,10 +82,15 @@ def authenticate_request():
     expected_api_key = os.environ.get('DATA_241_API_KEY')
 
     if not api_key or api_key != expected_api_key:
+        logging.warning("Unauthorized access attempt.")
         abort(401, description="Unauthorized: Invalid or missing API key.")
 
 # Load the stock data once when the app starts
-stock_data = load_stock_data()
+try:
+    stock_data = load_stock_data()
+except Exception as e:
+    logging.error(f"Failed to load stock data: {e}")
+    stock_data = pd.DataFrame()  # Load an empty dataframe if data fails
 
 @app.route('/api/v1/row_count', methods=['GET'])
 def get_row_count():
@@ -96,6 +114,7 @@ def get_unique_stock_count():
     authenticate_request()
 
     if 'stock_symbol' not in stock_data.columns:
+        logging.error("'stock_symbol' column missing in the data.")
         return jsonify({'error': 'Missing stock symbol data'}), 400
 
     unique_stocks = stock_data['stock_symbol'].nunique()
@@ -112,6 +131,7 @@ def get_row_by_market_count():
     authenticate_request()
 
     if 'market' not in stock_data.columns:
+        logging.error("'market' column missing in the data.")
         return jsonify({'error': 'Missing market data'}), 400
 
     market_counts = stock_data['market'].value_counts().to_dict()

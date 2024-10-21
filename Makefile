@@ -1,6 +1,6 @@
 # Define the image name and handle API key from the environment
 IMAGE_NAME=flask_notebook_app
-DATA_241_API_KEY ?= $(shell echo $$DATA_241_API_KEY)
+DATA_241_API_KEY ?= disha
 
 # Define phony targets to avoid conflicts with files named build, notebook, etc.
 .PHONY: build interactive notebook flask
