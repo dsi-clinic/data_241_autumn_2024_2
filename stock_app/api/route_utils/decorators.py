@@ -1,4 +1,6 @@
-from flask import jsonify
+import os
+import logging
+from flask import request, jsonify, abort
 from functools import wraps
 
 def authenticate_request(f):
@@ -19,5 +21,7 @@ def authenticate_request(f):
         if not api_key or api_key != expected_api_key:
             logging.warning("Unauthorized access attempt.")
             abort(401, description="Unauthorized: Invalid or missing API key.")
+
         return f(*args, **kwargs)
+
     return decorated_function

@@ -3,24 +3,30 @@ import pandas as pd
 import logging
 from flask import jsonify, request, abort, Blueprint
 from stock_app.api.v2.routes2 import load_all_stock_data
-
-
 from stock_app.api.route_utils.decorators import authenticate_request
 
+# Initialize API Blueprint
 api_v1_bp = Blueprint('api_v1', __name__)
 
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 
+# Load stock data
+try:
+    stock_data = load_all_stock_data()
+except Exception as e:
+    logging.error(f"Failed to load stock data: {e}")
+    stock_data = pd.DataFrame()
 
 @authenticate_request
 @api_v1_bp.route('/api/v1/row_count', methods=['GET'])
 def get_row_count():
     """
     Returns the total number of rows in the stock data.
+
     Returns:
         JSON: { 'row_count': <number_of_rows> }
     """
-  
     row_count = len(stock_data) 
     return jsonify({'row_count': row_count})
 
@@ -29,6 +35,7 @@ def get_row_count():
 def get_unique_stock_count():
     """
     Returns the count of unique stocks in the stock data.
+
     Returns:
         JSON: { 'unique_stock_count': <number_of_unique_stocks> }
     """
@@ -44,6 +51,7 @@ def get_unique_stock_count():
 def get_row_by_market_count():
     """
     Returns the number of rows for each stock market (NASDAQ, NYSE) in the data.
+
     Returns:
         JSON: { 'NYSE': <count>, 'NASDAQ': <count> }
     """
@@ -52,11 +60,7 @@ def get_row_by_market_count():
         return jsonify({'error': 'Missing market data'}), 400
 
     market_counts = stock_data['market'].value_counts().to_dict()
-    return jsonify({'NYSE': market_counts.get('NYSE', 0), 'NASDAQ': market_counts.get('NASDAQ', 0)})
-
-try:
-    stock_data = load_all_stock_data()
-except Exception as e:
-    logging.error(f"Failed to load stock data: {e}")
-    stock_data = pd.DataFrame()
-
+    return jsonify({
+        'NYSE': market_counts.get('NYSE', 0),
+        'NASDAQ': market_counts.get('NASDAQ', 0)
+    })
