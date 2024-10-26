@@ -5,9 +5,12 @@ import zipfile
 from flask import jsonify, request, abort, Blueprint
 from os import listdir
 from os.path import isfile, join
+from stock_app.api.route_utils.decorators import authenticate_request
 
+# Initialize API Blueprint
 api_v2_bp = Blueprint('api_v2', __name__)
 
+# Configure logging
 logging.basicConfig(level=logging.INFO)
 
 def merge_daily_stock_data(zip_path):
@@ -28,7 +31,7 @@ def merge_daily_stock_data(zip_path):
             for csv_file in file_list[1:]:
                 temp_df = pd.read_csv(zf.open(csv_file))
                 df = pd.concat([df, temp_df], ignore_index=True, sort=False)
-                
+
             # Add 'market' column based on file name
             if 'NASDAQ' in zip_path:
                 df['market'] = 'NASDAQ'
@@ -66,97 +69,92 @@ def load_all_stock_data():
         logging.error(f"Error loading stock data: {e}")
         raise RuntimeError(f"Error loading stock data: {e}")
 
+# Load stock data
 try:
     stock_data = load_all_stock_data()
 except Exception as e:
     logging.error(f"Failed to load stock data: {e}")
     stock_data = pd.DataFrame()
 
-def authenticate_request():
-    """
-    Authenticates the API request by checking the API key in the request header.
-    Raises:
-        401 Unauthorized: If the API key is missing or invalid.
-    """
-    api_key = request.headers.get('DATA-241-API-KEY')
-    expected_api_key = os.environ.get('DATA_241_API_KEY')
-
-    if not api_key or api_key != expected_api_key:
-        logging.warning("Unauthorized access attempt.")
-        abort(401, description="Unauthorized: Invalid or missing API key.")
-
+@authenticate_request
 @api_v2_bp.route('/api/v2/<YEAR>', methods=['GET'])
 def count_year(YEAR):
     """
     Returns the number of rows for a specific year in the stock data.
+
     Returns:
         JSON: { 'year': <YEAR>, 'count': <row_count> }
         or JSON: {'error': 'Year not found in the data'}
     """
-    authenticate_request()
     row_count = len(stock_data[stock_data['Date'].str.contains(YEAR)])
     
     if row_count == 0:
         return jsonify({'error': 'Year not found in the data'}), 404
-    else:
-        return jsonify({'year': int(YEAR), 'count': row_count})
+    return jsonify({'year': int(YEAR), 'count': row_count})
 
+@authenticate_request
 @api_v2_bp.route('/api/v2/open/<SYMBOL>', methods=['GET'])
 def open_prices(SYMBOL):
     """
     Returns open prices for a specific stock symbol.
+
     Returns:
         JSON: { 'symbol': <SYMBOL>, 'price_info': <list_of_prices> }
         or JSON: {'error': 'Symbol not found in the data'}
     """
-    authenticate_request()
+    return get_prices(SYMBOL, 'Open')
 
-    if SYMBOL not in stock_data['Symbol'].unique():
-        return jsonify({'error': 'Symbol not found in the data'}), 404
-    
-    symbol_df = stock_data[stock_data['Symbol'] == SYMBOL]
-    open_prices = symbol_df[['Date', 'Open']].to_dict(orient='records')
-    return jsonify({'symbol': SYMBOL, 'price_info': open_prices})
-
+@authenticate_request
 @api_v2_bp.route('/api/v2/close/<SYMBOL>', methods=['GET'])
 def close_prices(SYMBOL):
     """
     Returns close prices for a specific stock symbol.
+
+    Returns:
+        JSON: { 'symbol': <SYMBOL>, 'price_info': <list_of_prices> }
+        or JSON: {'error': 'Symbol not found in the data'}
     """
-    authenticate_request()
+    return get_prices(SYMBOL, 'Close')
 
-    if SYMBOL not in stock_data['Symbol'].unique():
-        return jsonify({'error': 'Symbol not found in the data'}), 404
-    
-    symbol_df = stock_data[stock_data['Symbol'] == SYMBOL]
-    close_prices = symbol_df[['Date', 'Close']].to_dict(orient='records')
-    return jsonify({'symbol': SYMBOL, 'price_info': close_prices})
-
+@authenticate_request
 @api_v2_bp.route('/api/v2/high/<SYMBOL>', methods=['GET'])
 def high_prices(SYMBOL):
     """
     Returns high prices for a specific stock symbol.
+
+    Returns:
+        JSON: { 'symbol': <SYMBOL>, 'price_info': <list_of_prices> }
+        or JSON: {'error': 'Symbol not found in the data'}
     """
-    authenticate_request()
+    return get_prices(SYMBOL, 'High')
 
-    if SYMBOL not in stock_data['Symbol'].unique():
-        return jsonify({'error': 'Symbol not found in the data'}), 404
-    
-    symbol_df = stock_data[stock_data['Symbol'] == SYMBOL]
-    high_prices = symbol_df[['Date', 'High']].to_dict(orient='records')
-    return jsonify({'symbol': SYMBOL, 'price_info': high_prices})
-
+@authenticate_request
 @api_v2_bp.route('/api/v2/low/<SYMBOL>', methods=['GET'])
 def low_prices(SYMBOL):
     """
     Returns low prices for a specific stock symbol.
-    """
-    authenticate_request()
 
-    if SYMBOL not in stock_data['Symbol'].unique():
+    Returns:
+        JSON: { 'symbol': <SYMBOL>, 'price_info': <list_of_prices> }
+        or JSON: {'error': 'Symbol not found in the data'}
+    """
+    return get_prices(SYMBOL, 'Low')
+
+def get_prices(symbol, price_type):
+    """
+    Helper function to get price information for a specific stock symbol.
+
+    Args:
+        symbol (str): Stock symbol to lookup.
+        price_type (str): Type of price to return ('Open', 'Close', 'High', 'Low').
+
+    Returns:
+        JSON: { 'symbol': <SYMBOL>, 'price_info': <list_of_prices> }
+              or JSON: {'error': 'Symbol not found in the data'}
+    """
+    if symbol not in stock_data['Symbol'].unique():
         return jsonify({'error': 'Symbol not found in the data'}), 404
     
-    symbol_df = stock_data[stock_data['Symbol'] == SYMBOL]
-    low_prices = symbol_df[['Date', 'Low']].to_dict(orient='records')
-    return jsonify({'symbol': SYMBOL, 'price_info': low_prices})
-
+    symbol_df = stock_data[stock_data['Symbol'] == symbol]
+    price_info = symbol_df[['Date', price_type]].to_dict(orient='records')
+    return jsonify({'symbol': symbol, 'price_info': price_info})
