@@ -76,6 +76,12 @@ except Exception as e:
     logging.error(f"Failed to load stock data: {e}")
     stock_data = pd.DataFrame()
 
+
+
+
+
+
+
 @authenticate_request
 @api_v2_bp.route('/api/v2/<YEAR>', methods=['GET'])
 def count_year(YEAR):
@@ -92,6 +98,9 @@ def count_year(YEAR):
         return jsonify({'error': 'Year not found in the data'}), 404
     return jsonify({'year': int(YEAR), 'count': row_count})
 
+
+
+
 @authenticate_request
 @api_v2_bp.route('/api/v2/open/<SYMBOL>', methods=['GET'])
 def open_prices(SYMBOL):
@@ -103,6 +112,8 @@ def open_prices(SYMBOL):
         or JSON: {'error': 'Symbol not found in the data'}
     """
     return get_prices(SYMBOL, 'Open')
+
+
 
 @authenticate_request
 @api_v2_bp.route('/api/v2/close/<SYMBOL>', methods=['GET'])
