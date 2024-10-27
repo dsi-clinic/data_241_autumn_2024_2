@@ -39,11 +39,11 @@ def get_unique_stock_count():
     Returns:
         JSON: { 'unique_stock_count': <number_of_unique_stocks> }
     """
-    if 'stock_symbol' not in stock_data.columns:
-        logging.error("'stock_symbol' column missing in the data.")
+    if 'Symbol' not in stock_data.columns:
+        logging.error("'Symbol' column missing in the data.")
         return jsonify({'error': 'Missing stock symbol data'}), 400
 
-    unique_stocks = stock_data['stock_symbol'].nunique()
+    unique_stocks = stock_data['Symbol'].nunique()
     return jsonify({'unique_stock_count': unique_stocks})
 
 @authenticate_request
