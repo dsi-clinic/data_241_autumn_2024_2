@@ -1,18 +1,18 @@
 # data_241_autumn_2024_2
 
-This repository contains a basic dockerfile that will run a jupyter notebook instance. To build the docker image, please type in:
+# Repository Setup Guide
 
-docker build . -t data241
+To set up and run this repository, execute the following commands in your terminal:
 
-Note that the image name in the above command is drw
+1. make build - This should build the image from the dockerfile in your repo
 
-To run the image type in the following:
+2. make interactive - This should start an interactive bash session with the current working directory mounted to /app/src
 
-docker run -p 8888:8888 -v ${PWD}:/tmp data241
+3. make notebook - This should start a notebook server with the current working directory mounted /app/src and ports properly set up so that the notebook can be accessed.
 
-as you can see we are running the data241 image.
+4. make flask - This should start the flask server, making sure to expose port 4000 so that we can ping the API from outside the container.
 
-People
+# People
 
 Anuj Agarwal - 4th-year Undergraduate Data Science major
 
@@ -22,33 +22,49 @@ Ishani Raj - 3rd-year Undergraduate exchange student
 
 Ken Law - 4th-year Undergraduate MENG major
 
-Folders and Files
+# Folders and Files
 
-Util folder - Our code is in this folder
+data folder - All our data is in this folder. It contains a subfolder called raw data which contains NASDAQ_2019.zip and NYSE_2019.zip.
 
-Data folder - All our data is in this folder
+util folder - some extra python files. Currently empty as there are no extraneous files.
 
-DockerFile - Has instructions to run code and set up proper environment conditions 
+DockerFile - The Dockerfile provides a blueprint for building a consistent, isolated environment in which the application can run. It includes the following configurations:
 
-requirements.txt - All python/library versions for the project
+Base Image: Specifies a base Docker image, such as python:3.x, ensuring the correct Python version is used.
 
-app.py - Serves as the entry point for the Flask application, responsible for setting up and running the API server. This file is kept minimal and only manages the high-level application setup. 
+Dependencies: Installs all required Python libraries as listed in requirements.txt, ensuring compatibility and consistency.
 
-Application Initialization: create_app() function initializes the Flask app, registers API routes, and configures the server.
+Directory Setup: Sets up the /app/src directory where the application code is mounted, aligning with the Makefile commands for interactive sessions and server startups.
 
-Route Registration: Routes from different modules are registered here, allowing for modular organization of API versions and endpoints.
+Entrypoint: Configures default commands or environment variables if needed for the container to run the application, typically set up for make flask or make notebook.
 
-Server Configuration: The application is configured to run on host='0.0.0.0' and port=5000 by default for external access within Docker.
+Makefile -  The Makefile in this project automates common setup and execution tasks, providing an easy-to-use interface to streamline the development workflow. Below are the main commands included in the Makefile:
 
-test.py - lightweight testing script to validate the functionality of the API endpoints. It helps confirm that the Flask API server is correctly processing requests and handling authorization. 
+make build: Builds the Docker image for the application using the Dockerfile in the repository. This prepares a container environment with all dependencies installed.
 
-Key features include:
+make interactive: Launches an interactive bash session inside the Docker container, mounting the current working directory to /app/src. This allows for direct interaction with the container environment, making it useful for debugging and development.
 
-API Key Authentication: Ensures that requests include a valid DATA-241-API-KEY header, as required by the API. Incorrect or missing keys should trigger a 401 Unauthorized response.
+make notebook: Starts a Jupyter Notebook server with the current working directory mounted at /app/src and properly sets up port forwarding, allowing access to the notebook from outside the container.
 
-Endpoint Testing: Includes functions to send GET requests to various endpoints (e.g., /api/v2/{YEAR}, /api/v2/open/{SYMBOL}), validating responses, and printing status codes and response content.
+make flask: Starts the Flask server in the Docker container, exposing port 4000 to make the API accessible from outside the container.
 
-Error Handling: Provides exception handling for request errors, making it easier to diagnose issues with endpoint communication.
+requirements.txt - All python/library versions for the project.
 
-Makefile: Simplifies and automates common tasks, enabling smooth development and testing workflows. Each command encapsulates a different aspect of the project setup and execution, making it easier to build, test, and run the application within a Docker environment. 
+stock_app - the entire app as a folder
+
+app.py - The app.py file serves as the main entry point for the Flask application, responsible for setting up and running the API server. This file initializes the application and organizes the routing, ensuring a modular and organized structure for handling API requests.
+
+api folder - The api/ folder contains all modules related to the API endpoints of the Flask application. This folder is organized to support modular routing and versioned API management, ensuring that different versions of the API can coexist and evolve independently.
+
+v1 folder - The v1/ directory holds the first version of the API endpoints. This version typically includes foundational routes and functionality, often setting the baseline behavior for the API.
+
+v2 folder - The v2/ directory hosts the second version of the API, incorporating additional features, improvements, or refined endpoint behaviors.
+
+route_utils - The route_utils/ directory provides utility functions and decorators that support the API routes across versions.
+
+decorators.py -  Custom decorators for functions such as API key validation, ensuring that requests meet authentication requirements.
+
+Test - folder containing files for testing the code.
+
+test.py - dedicated python file to run and test the code.
 
