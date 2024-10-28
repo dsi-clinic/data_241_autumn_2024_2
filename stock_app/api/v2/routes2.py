@@ -76,12 +76,6 @@ except Exception as e:
     logging.error(f"Failed to load stock data: {e}")
     stock_data = pd.DataFrame()
 
-
-
-
-
-
-
 @authenticate_request
 @api_v2_bp.route('/api/v2/<YEAR>', methods=['GET'])
 def count_year(YEAR):
@@ -92,7 +86,7 @@ def count_year(YEAR):
         JSON: { 'year': <YEAR>, 'count': <row_count> }
         or JSON: {'error': 'Year not found in the data'}
     """
-    row_count = len(stock_data[stock_data['Date'].str.contains(YEAR)])
+    row_count = len(stock_data[stock_data['Date'].str.contains(str(YEAR))])
     
     if row_count == 0:
         return jsonify({'error': 'Year not found in the data'}), 404

@@ -10,7 +10,7 @@ def make_get_request(endpoint, api_key):
         api_key (str): The API key to authenticate the request.
 
     Returns:
-        response (requests.Response): The response object from the GET request if successful, 
+        response (requests.Response): The response object from the GET request if successful,
                                       otherwise None if an error occurs.
     """
     # Base URL for the Flask app running in Docker
@@ -36,7 +36,7 @@ def make_get_request(endpoint, api_key):
         # Print the response content in JSON format
         print("Response Content:")
         print(response.json())  # Corrected to properly handle JSON response
-        
+       
         return response
 
     except requests.exceptions.HTTPError as http_err:
@@ -45,13 +45,13 @@ def make_get_request(endpoint, api_key):
         print(f"Request error occurred: {req_err}")
     except Exception as err:
         print(f"An error occurred: {err}")
-    
+   
     return None
 
 if __name__ == "__main__":
     """
     Main function to make GET requests to a specified Flask API endpoint.
-    
+   
     Process:
     1. Retrieves the API key from the environment variable 'DATA_241_API_KEY'.
     2. If the API key is not set, it prints an error and exits.
@@ -63,8 +63,23 @@ if __name__ == "__main__":
     if not api_key:
         print("Error: The DATA_241_API_KEY environment variable is not set.")
     else:
-        # Specify the API endpoint to test
+        #Testing v2 functions
+        #Add string endpoint to test
+        list_endpoint = [
+        '/api/v2/2019',
+        '/api/v2/open/AAPL',
+        '/api/v2/close/AAPL',
+        '/api/v2/high/AAPL',
+        '/api/v2/low/AAPL'
+        ]
+
+        for endpoint in list_endpoint:
+            make_get_request(endpoint,api_key)
+
+
+        '''
+        #Testing individual endpoint
+
         endpoint = '/api/v1/row_count'
-        
-        # Send the GET request and handle the response
         make_get_request(endpoint, api_key)
+        '''
