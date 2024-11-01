@@ -1,12 +1,15 @@
-import os
-import pandas as pd
+"""Flask Routes for Part 1"""
+
 import logging
-from flask import jsonify, request, abort, Blueprint
-from stock_app.api.v2.routes2 import load_all_stock_data
+
+import pandas as pd
+from flask import Blueprint, jsonify
+
 from stock_app.api.route_utils.decorators import authenticate_request
+from stock_app.api.v2.routes2 import load_all_stock_data
 
 # Initialize API Blueprint
-api_v1_bp = Blueprint('api_v1', __name__)
+api_v1_bp = Blueprint("api_v1", __name__)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -18,49 +21,51 @@ except Exception as e:
     logging.error(f"Failed to load stock data: {e}")
     stock_data = pd.DataFrame()
 
+
 @authenticate_request
-@api_v1_bp.route('/api/v1/row_count', methods=['GET'])
+@api_v1_bp.route("/api/v1/row_count", methods=["GET"])
 def get_row_count():
-    """
-    Returns the total number of rows in the stock data.
+    """Returns the total number of rows in the stock data.
 
     Returns:
         JSON: { 'row_count': <number_of_rows> }
     """
-    row_count = len(stock_data) 
-    return jsonify({'row_count': row_count})
+    row_count = len(stock_data)
+    return jsonify({"row_count": row_count})
+
 
 @authenticate_request
-@api_v1_bp.route('/api/v1/unique_stock_count', methods=['GET'])
+@api_v1_bp.route("/api/v1/unique_stock_count", methods=["GET"])
 def get_unique_stock_count():
-    """
-    Returns the count of unique stocks in the stock data.
+    """Returns the count of unique stocks in the stock data.
 
     Returns:
         JSON: { 'unique_stock_count': <number_of_unique_stocks> }
     """
-    if 'Symbol' not in stock_data.columns:
+    if "Symbol" not in stock_data.columns:
         logging.error("'Symbol' column missing in the data.")
-        return jsonify({'error': 'Missing stock symbol data'}), 400
+        return jsonify({"error": "Missing stock symbol data"}), 400
 
-    unique_stocks = stock_data['Symbol'].nunique()
-    return jsonify({'unique_stock_count': unique_stocks})
+    unique_stocks = stock_data["Symbol"].nunique()
+    return jsonify({"unique_stock_count": unique_stocks})
+
 
 @authenticate_request
-@api_v1_bp.route('/api/v1/row_by_market_count', methods=['GET'])
+@api_v1_bp.route("/api/v1/row_by_market_count", methods=["GET"])
 def get_row_by_market_count():
-    """
-    Returns the number of rows for each stock market (NASDAQ, NYSE) in the data.
+    """Returns rows for (NASDAQ, NYSE) in the data.
 
     Returns:
         JSON: { 'NYSE': <count>, 'NASDAQ': <count> }
     """
-    if 'market' not in stock_data.columns:
+    if "market" not in stock_data.columns:
         logging.error("'market' column missing in the data.")
-        return jsonify({'error': 'Missing market data'}), 400
+        return jsonify({"error": "Missing market data"}), 400
 
-    market_counts = stock_data['market'].value_counts().to_dict()
-    return jsonify({
-        'NYSE': market_counts.get('NYSE', 0),
-        'NASDAQ': market_counts.get('NASDAQ', 0)
-    })
+    market_counts = stock_data["market"].value_counts().to_dict()
+    return jsonify(
+        {
+            "NYSE": market_counts.get("NYSE", 0),
+            "NASDAQ": market_counts.get("NASDAQ", 0),
+        }
+    )
