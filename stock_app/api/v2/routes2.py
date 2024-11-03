@@ -3,6 +3,7 @@
 import logging
 import zipfile
 from os import listdir
+from pathlib import Path
 
 import pandas as pd
 from flask import Blueprint, jsonify
@@ -63,9 +64,9 @@ def load_all_stock_data():
         combined_df = pd.DataFrame()
         data_path = "./data/raw_data/"
         all_files = [
-            "./data/raw_data/" + f
+            data_path + f
             for f in listdir(data_path)
-            if (data_path + str(f)).is_file()
+            if Path(data_path + f).is_file()
         ]
 
         for path in all_files:
