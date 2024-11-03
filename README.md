@@ -12,6 +12,8 @@ To set up and run this repository, execute the following commands in your termin
 
 4. make flask - This should start the flask server, making sure to expose port 4000 so that we can ping the API from outside the container.
 
+To check your code for any issues, run: ruff check .
+
 # People
 
 Anuj Agarwal - 4th-year Undergraduate Data Science major
@@ -49,6 +51,10 @@ make notebook: Starts a Jupyter Notebook server with the current working directo
 make flask: Starts the Flask server in the Docker container, exposing port 4000 to make the API accessible from outside the container.
 
 requirements.txt - All python/library versions for the project.
+
+pyproject.toml - Configuration file for `ruff`, defining linting and formatting rules for the project.
+
+.pre-commit-config.yaml - Configuration file for pre-commit hooks to enforce code quality and consistency before commits. (Note: This file should be named `.pre-commit-config.yaml` in your local setup, even if it's not shown with the `.` prefix here.)
 
 stock_app - the entire app as a folder
 
