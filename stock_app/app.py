@@ -19,4 +19,4 @@ def create_app():
 
 if __name__ == "__main__":
     app_instance = create_app()
-    app_instance.run(host="127.0.0.1", port=4000)
+    app_instance.run(host="localhost", port=4000)
