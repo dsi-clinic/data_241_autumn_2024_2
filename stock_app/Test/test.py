@@ -22,7 +22,7 @@ def make_get_request(endpoint, api_key):
     # Base URL for the Flask app running in Docker
 
     base_url = "http://localhost:4000"
-    full_url = f"{base_url}{endpoint}"
+    full_url = base_url + endpoint
 
     # Define the request headers
     headers = {
@@ -38,7 +38,7 @@ def make_get_request(endpoint, api_key):
         response.raise_for_status()
 
         # Print the response status code
-        print(f"Status Code: {response.status_code}")
+        print("Status Code:" + str(response.status_code))
 
         # Print the response content in JSON format
         print("Response Content:")

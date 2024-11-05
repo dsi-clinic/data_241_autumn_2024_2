@@ -10,15 +10,9 @@ COPY requirements.txt .
 # Install Python dependencies without caching to reduce image size
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code
-COPY stock_app ./stock_app
-
-# Copy data files if needed for testing (consider excluding this in production)
-COPY data/raw_data ./data/raw_data
-
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
-ENV FLASK_APP=stock_app.app
+ENV FLASK_APP=app
 
 # Expose port 4000 for Flask
 EXPOSE 4000

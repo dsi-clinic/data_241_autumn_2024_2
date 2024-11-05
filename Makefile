@@ -27,7 +27,7 @@ notebook: build
 # Start the Flask server on port 4000
 flask: build
 	docker run -p 4000:4000 \
-		-e FLASK_APP=stock_app.app \
+		-e FLASK_APP=/app/src/app.py \
 		-e FLASK_DEBUG=1 \
 		-e FLASK_ENV=development \
 		-e DATA_241_API_KEY=$(DATA_241_API_KEY) \
