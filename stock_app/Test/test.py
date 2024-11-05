@@ -5,6 +5,8 @@ import os
 import requests
 
 
+
+
 def make_get_request(endpoint, api_key):
     """Sends GET request with API key to specified Flask API endpoint.
 
@@ -21,7 +23,7 @@ def make_get_request(endpoint, api_key):
     """
     # Base URL for the Flask app running in Docker
 
-    base_url = "http://localhost:4000"
+    base_url = "http://127.0.0.1:4000"
     full_url = base_url + endpoint
 
     # Define the request headers
@@ -32,8 +34,8 @@ def make_get_request(endpoint, api_key):
 
     try:
         # Send the GET request
-        response = requests.get(full_url, headers=headers, timeout=10)
-
+        response = requests.get(full_url, headers=headers)
+        
         # Raise an HTTPError for bad responses (4xx and 5xx)
         response.raise_for_status()
 
@@ -73,7 +75,9 @@ if __name__ == "__main__":
     else:
         # Testing v2 functions
         # Add string endpoint to test
+
         list_endpoint = [
+            "/api/v1/row_by_market_count",
             "/api/v2/2019",
             "/api/v2/open/AAPL",
             "/api/v2/close/AAPL",
