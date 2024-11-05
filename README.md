@@ -24,9 +24,7 @@ Ken Law - 4th-year Undergraduate MENG major
 
 # Folders and Files
 
-data folder - All our data is in this folder. It contains a subfolder called raw data which contains NASDAQ_2019.zip and NYSE_2019.zip.
-
-util folder - some extra python files. Currently empty as there are no extraneous files.
+data folder - All our data is in this folder. It contains a subfolder called raw data which contains NASDAQ, NYSE_2019 zip files from 2010-2020
 
 DockerFile - The Dockerfile provides a blueprint for building a consistent, isolated environment in which the application can run. It includes the following configurations:
 
@@ -62,9 +60,16 @@ v2 folder - The v2/ directory hosts the second version of the API, incorporating
 
 route_utils - The route_utils/ directory provides utility functions and decorators that support the API routes across versions.
 
+data_utils  - The data_utils / directory provides utility functions that parses data that is used by the API routes 
+
+load_utils.py - Data loading files that draws raw data fromdata folder and parses into a dataframe
+
 decorators.py -  Custom decorators for functions such as API key validation, ensuring that requests meet authentication requirements.
 
 Test - folder containing files for testing the code.
 
 test.py - dedicated python file to run and test the code.
 
+Pyproject.toml - toml file dictating parameters for ruff lint checking
+
+.pre-commit-config.yaml - yaml configuration file that enables a ruff checking step before git commitment
