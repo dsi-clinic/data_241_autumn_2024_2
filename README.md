@@ -70,3 +70,6 @@ Test - folder containing files for testing the code.
 
 test.py - dedicated python file to run and test the code.
 
+Pyproject.toml - toml file dictating parameters for ruff lint checking
+
+.pre-commit-config.yaml - yaml configuration file that enables a ruff checking step before git commitment
