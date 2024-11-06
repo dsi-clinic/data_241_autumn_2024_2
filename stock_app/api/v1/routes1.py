@@ -17,17 +17,21 @@ except Exception as e:
     logging.error(f"Failed to load stock data: {e}")
 
 
+
+
 def register_routes1(app):
     """Registers Part 1 Routes"""
 
-    @authenticate_request
     @app.route("/api/v1/row_by_market_count", methods=["GET"])
+    @authenticate_request
     def get_row_by_market_count():
         """Returns rows for (NASDAQ, NYSE) in the data.
 
         Returns:
             JSON: { 'NYSE': <count>, 'NASDAQ': <count> }
         """
+        check_auth()
+
         if "market" not in stock_data.columns:
             logging.error("'market' column missing in the data.")
             return jsonify({"error": "Missing market data"}), 400
@@ -40,23 +44,26 @@ def register_routes1(app):
             }
         )
 
-    @authenticate_request
     @app.route("/api/v1/unique_stock_count", methods=["GET"])
+    @authenticate_request
     def get_unique_stock_count():
         """Returns the count of unique stocks in the stock data.
 
         Returns:
             JSON: { 'unique_stock_count': <number_of_unique_stocks> }
         """
+
+        check_auth()
+
         if "Symbol" not in stock_data.columns:
             logging.error("'Symbol' column missing in the data.")
             return jsonify({"error": "Missing stock symbol data"}), 400
 
         unique_stocks = stock_data["Symbol"].nunique()
         return jsonify({"unique_stock_count": unique_stocks})
-
-    @authenticate_request
+        
     @app.route("/api/v1/row_count", methods=["GET"])
+    @authenticate_request
     def get_row_count():
         """Returns the total number of rows in the stock data.
 

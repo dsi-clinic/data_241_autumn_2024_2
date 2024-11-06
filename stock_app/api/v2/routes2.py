@@ -43,9 +43,9 @@ def get_prices(symbol, price_type):
 
 def register_routes2(app):
     """Registers Part 2 Routes"""
-
-    @authenticate_request
+    
     @app.route("/api/v2/<PRICE_TYPE>/<SYMBOL>", methods=["GET"])
+    @authenticate_request
     def open_prices(PRICE_TYPE, SYMBOL):
         """Returns prices for a specific stock symbol and price type
 
@@ -56,9 +56,9 @@ def register_routes2(app):
         PRICE_TYPE = PRICE_TYPE.capitalize()
 
         return get_prices(SYMBOL, PRICE_TYPE)
-
-    @authenticate_request
+        
     @app.route("/api/v2/<YEAR>", methods=["GET"])
+    @authenticate_request
     def count_year(YEAR):
         """Returns the number of rows for a specific year in the stock data.
 
