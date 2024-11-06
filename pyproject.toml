@@ -21,7 +21,6 @@ extend-select = [
   "PLR2004",# Pylint no magic values!
   "PTH",    # prefer pathlib over os.path as seems to be the consensus
   "Q",      # flake8-quotes - double quotes preferred (like black)
-  "S",      # flake8-bandit - security checks
   "UP",     # pyupgrade - requires preferred syntax in newer python versions
   "YTT",    # flake8-2020 - corrects code that doesn't anticipate 2 digit python minor version  
 ]

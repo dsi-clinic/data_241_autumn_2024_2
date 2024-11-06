@@ -17,8 +17,6 @@ except Exception as e:
     logging.error(f"Failed to load stock data: {e}")
 
 
-
-
 def register_routes1(app):
     """Registers Part 1 Routes"""
 
@@ -30,7 +28,6 @@ def register_routes1(app):
         Returns:
             JSON: { 'NYSE': <count>, 'NASDAQ': <count> }
         """
-
         if "market" not in stock_data.columns:
             logging.error("'market' column missing in the data.")
             return jsonify({"error": "Missing market data"}), 400
@@ -51,14 +48,13 @@ def register_routes1(app):
         Returns:
             JSON: { 'unique_stock_count': <number_of_unique_stocks> }
         """
-
         if "Symbol" not in stock_data.columns:
             logging.error("'Symbol' column missing in the data.")
             return jsonify({"error": "Missing stock symbol data"}), 400
 
         unique_stocks = stock_data["Symbol"].nunique()
         return jsonify({"unique_stock_count": unique_stocks})
-  
+
     @app.route("/api/v1/row_count", methods=["GET"])
     @authenticate_request
     def get_row_count():

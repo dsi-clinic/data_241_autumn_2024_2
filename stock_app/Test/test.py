@@ -5,8 +5,6 @@ import os
 import requests
 
 
-
-
 def make_get_request(endpoint, api_key):
     """Sends GET request with API key to specified Flask API endpoint.
 
@@ -35,7 +33,7 @@ def make_get_request(endpoint, api_key):
     try:
         # Send the GET request
         response = requests.get(full_url, headers=headers)
-        
+
         # Raise an HTTPError for bad responses (4xx and 5xx)
         response.raise_for_status()
 

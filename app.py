@@ -13,11 +13,10 @@ def create_app():
     register_routes1(app)
     register_routes2(app)
 
-
     return app
 
 
 app = create_app()
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=4000, debug=True)
+    app.run(host="0.0.0.0", port=4000, debug=True)
