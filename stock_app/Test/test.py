@@ -74,6 +74,7 @@ if __name__ == "__main__":
         # Testing v2 functions
         # Add string endpoint to test
         list_endpoint = [
+            "/api/v1/row_by_market_count",
             "/api/v2/2019",
             "/api/v2/open/AAPL",
             "/api/v2/close/AAPL",
