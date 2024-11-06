@@ -2,7 +2,6 @@
 
 import logging
 import zipfile
-import os
 from os import listdir
 from pathlib import Path
 
@@ -53,7 +52,6 @@ def load_all_stock_data():
         pd.DataFrame: Combined DataFrame of stock data.
     """
     try:
-        
         combined_df = pd.DataFrame()
         data_path = "/app/src/data/raw_data/"
         all_files = [

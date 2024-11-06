@@ -43,7 +43,7 @@ def get_prices(symbol, price_type):
 
 def register_routes2(app):
     """Registers Part 2 Routes"""
-    
+
     @app.route("/api/v2/<PRICE_TYPE>/<SYMBOL>", methods=["GET"])
     @authenticate_request
     def open_prices(PRICE_TYPE, SYMBOL):
@@ -56,7 +56,7 @@ def register_routes2(app):
         PRICE_TYPE = PRICE_TYPE.capitalize()
 
         return get_prices(SYMBOL, PRICE_TYPE)
-        
+
     @app.route("/api/v2/<YEAR>", methods=["GET"])
     @authenticate_request
     def count_year(YEAR):
