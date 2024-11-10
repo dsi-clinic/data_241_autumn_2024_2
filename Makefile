@@ -46,7 +46,7 @@ flask: build
 
 db_create: build
 	docker run $(COMMON_DOCKER_FLAGS) $(IMAGE_NAME) \
-		python /app/src/app/stock_app/api/data_utils/db_manage.py db_create
+		python /app/src/stock_app/api/data_utils/db_manage.py db_create
 
 db_load: build
 	docker run $(COMMON_DOCKER_FLAGS) $(IMAGE_NAME) \
