@@ -10,6 +10,10 @@ COPY requirements.txt .
 # Install Python dependencies without caching to reduce image size
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install SQLite (required for database operations)
+RUN apt-get update 
+RUN apt-get install -y sqlite3
+
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=app
