@@ -1,7 +1,7 @@
 import csv
 import os
 import sqlite3
-import pandas as pd
+import io
 from pandas import DataFrame
 
 import logging
@@ -101,33 +101,36 @@ this loads the data from zip files to the table in stocks.
 """
 #___________________________________________
 
-def load_csv_to_db(conn, csv_path, table_name):
+def load_csv_to_db(conn, zip_path, table_name):
     """Load a CSV file into an existing SQLite table.
 
     Args:
-        csv_path: Path to the CSV file
+        zip_path: Path to the CSV file
         conn: SQLite connection
         table_name: Name of the existing table
     """
+    with zipfile.ZipFile(zip_path, "r") as zf:
+        file_list = zf.namelist()
+        #For each csv file in zip file
+        for csv_file in file_list:
+            with zf.open(csv_file) as f:
+                text_file = io.TextIOWrapper(f, encoding="utf-8")
+                reader = csv.reader(text_file)
+                headers = next(reader)[0:]  # Get column names
 
-    with open(csv_path) as f:
-        reader = csv.reader(f)
-        headers = next(reader)[1:]  # Get column names
-        headers = ["id"] + headers
-
-        # Prepare INSERT statement
-        placeholders = ",".join("?" for _ in headers)
-        insert_sql = (
-            f"INSERT INTO {table_name} ({','.join(headers)})"
-            f" VALUES ({placeholders})"
-        )
-        # Insert all rows
-        cur = conn.cursor()
-        # import pdb; pdb.set_trace()
-        cur.executemany(insert_sql, reader)
-        conn.commit()
-    print(f"Loaded {cur.rowcount} rows to {table_name} successfully")
-    return True
+                # Prepare INSERT statement
+                placeholders = ",".join("?" for _ in headers)
+                insert_sql = (
+                    f"INSERT INTO {table_name} ({','.join(headers)})"
+                    f" VALUES ({placeholders})"
+                )
+                # Insert all rows
+                cur = conn.cursor()
+                # import pdb; pdb.set_trace()
+                cur.executemany(insert_sql, reader)
+                conn.commit()
+            print(f"Loaded {cur.rowcount} rows to {table_name} successfully")
+            return True
 
 def create_db_connection():
     """Sqlite specific connection function
@@ -145,11 +148,9 @@ def load_all_stock_data():
     """ LOADS STOCK DATA INTO TABLE
     """
     try:
-
         data_path = "/app/src/data/raw_data/"
         table_name = "stocks"
         conn = create_db_connection()
-
         # All zip files
         all_files = [
             data_path + f
@@ -159,17 +160,9 @@ def load_all_stock_data():
         # For each zip file
         for zip_path in all_files:
             logging.info(f"Loading {zip_path.split('/')[-1]} data...")
-
             try:
-
-              with zipfile.ZipFile(zip_path, "r") as zf:
-                file_list = zf.namelist()
-
-                #For each csv file in zip file
-                for csv_file in file_list:
-                  load_csv_to_db(conn, csv_file, table_name)
-
-              return
+                load_csv_to_db(conn, zip_path, table_name)
+                return
 
             except zipfile.BadZipFile:
 
