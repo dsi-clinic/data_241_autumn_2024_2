@@ -46,6 +46,14 @@ make notebook: Starts a Jupyter Notebook server with the current working directo
 
 make flask: Starts the Flask server in the Docker container, exposing port 4000 to make the API accessible from outside the container.
 
+make db_create: Creates SQLite database, stocks.db, with stocks table in data folder
+
+make db_load: Loads data from zip files in raw_data into SQLite database
+
+make db_rm: Removes stocks.db database
+
+make db_clean: Removes, Creates, Loads data into SQLite database in order
+
 requirements.txt - All python/library versions for the project.
 
 stock_app - the entire app as a folder
@@ -60,9 +68,11 @@ v2 folder - The v2/ directory hosts the second version of the API, incorporating
 
 route_utils - The route_utils/ directory provides utility functions and decorators that support the API routes across versions.
 
-data_utils  - The data_utils / directory provides utility functions that parses data that is used by the API routes 
+data_utils  - The data_utils / directory provides utility functions that parses data that is used by the API routes.
 
-load_utils.py - Data loading files that draws raw data fromdata folder and parses into a dataframe
+load_utils.py - Draws data from raw_data folder. Creates, loads, deletes, data into SQLite database.
+
+stocks.db - SQLite database storing stock data.
 
 decorators.py -  Custom decorators for functions such as API key validation, ensuring that requests meet authentication requirements.
 
