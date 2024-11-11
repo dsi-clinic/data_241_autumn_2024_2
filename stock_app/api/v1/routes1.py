@@ -1,9 +1,7 @@
 """Flask Routes for Part 1"""
 
 import logging
-
 from flask import jsonify
-
 from stock_app.api.data_utils.loading_utils import load_data
 from stock_app.api.route_utils.decorators import authenticate_request
 
@@ -13,9 +11,10 @@ logging.basicConfig(level=logging.INFO)
 # Load stock data
 try:
     stock_data = load_data()
+    # Ensure columns are consistently lowercase
+    stock_data.columns = stock_data.columns.str.lower()
 except Exception as e:
     logging.error(f"Failed to load stock data: {e}")
-
 
 def register_routes1(app):
     """Registers Part 1 Routes"""
@@ -26,7 +25,7 @@ def register_routes1(app):
         """Returns rows for (NASDAQ, NYSE) in the data.
 
         Returns:
-            JSON: { 'NYSE': <count>, 'NASDAQ': <count> }
+            JSON: { 'nyse': <count>, 'nasdaq': <count> }
         """
         if "market" not in stock_data.columns:
             logging.error("'market' column missing in the data.")
@@ -35,8 +34,8 @@ def register_routes1(app):
         market_counts = stock_data["market"].value_counts().to_dict()
         return jsonify(
             {
-                "NYSE": market_counts.get("NYSE", 0),
-                "NASDAQ": market_counts.get("NASDAQ", 0),
+                "nyse": market_counts.get("nyse", 0),
+                "nasdaq": market_counts.get("nasdaq", 0),
             }
         )
 
@@ -48,11 +47,11 @@ def register_routes1(app):
         Returns:
             JSON: { 'unique_stock_count': <number_of_unique_stocks> }
         """
-        if "Symbol" not in stock_data.columns:
-            logging.error("'Symbol' column missing in the data.")
+        if "symbol" not in stock_data.columns:
+            logging.error("'symbol' column missing in the data.")
             return jsonify({"error": "Missing stock symbol data"}), 400
 
-        unique_stocks = stock_data["Symbol"].nunique()
+        unique_stocks = stock_data["symbol"].nunique()
         return jsonify({"unique_stock_count": unique_stocks})
 
     @app.route("/api/v1/row_count", methods=["GET"])
