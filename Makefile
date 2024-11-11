@@ -50,12 +50,12 @@ db_create: build
 
 db_load: build
 	docker run $(COMMON_DOCKER_FLAGS) $(IMAGE_NAME) \
-		python /app/src/app/stock_app/api/data_utils/db_manage.py db_load
+		python /app/src/stock_app/api/data_utils/db_manage.py db_load
 
 db_rm: build
 	docker run $(COMMON_DOCKER_FLAGS) $(IMAGE_NAME) \
-		python /app/src/app/stock_app/api/data_utils/db_manage.py db_rm
+		python /app/src/stock_app/api/data_utils/db_manage.py db_rm
 
 db_clean: build
 	docker run $(COMMON_DOCKER_FLAGS) $(IMAGE_NAME) \
-		python /app/src/app/stock_app/api/data_utils/db_manage.py db_clean
+		python /app/src/stock_app/api/data_utils/db_manage.py db_clean
