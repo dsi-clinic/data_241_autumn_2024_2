@@ -3,6 +3,7 @@ import os
 import sqlite3
 import io
 from pandas import DataFrame
+import pandas as pd
 
 import logging
 import zipfile
@@ -18,12 +19,51 @@ def execute_sql_command(conn, sql_query):  #Untouched
 
 
 #Loading in the whole table (to replace pandas loading in routes)
-def load_data():
-  conn = create_db_connection()
-  df = DataFrame(conn.fetchall())
-  df.columns = resoverall.keys()
-  return df
+def execute_query_return_list_of_dicts_lm(conn, sql_query):
+    """
+    Low memory version of loading command command
+    """
 
+    cursor = conn.cursor()
+    cursor.execute(sql_query)
+    description_info = cursor.description
+
+    headers = [x[0] for x in description_info]
+    return_dict_list = []
+
+    while True:
+        single_result = cursor.fetchone()
+
+        if not single_result:
+            break
+
+        single_result_dict = dict(zip(headers, single_result))
+        return_dict_list.append(single_result_dict)
+
+    return return_dict_list
+
+
+
+def load_data():
+    """
+    Loading data with SQL
+    """
+    print('Loading Data')
+    conn = create_db_connection()
+    query = """select market, 
+            Symbol, 
+            Date, 
+            Open, 
+            High, 
+            Low, 
+            Close, 
+            Volume
+         from stocks
+    """
+    df = pd.DataFrame(execute_query_return_list_of_dicts_lm(conn, query))
+    return df
+
+#https://sqliteviewer.app/#/stocks.db/table/stocks/
 
 
 # TASK 1
@@ -44,7 +84,8 @@ def create_stocks_table(conn):
     """Create a stocks table"""
     create_stocks = """
     CREATE TABLE stocks (
-        Symbol TEXT PRIMARY KEY,
+        market TEXT,
+        Symbol TEXT,
         Date TEXT,
         Open REAL,
         High REAL,
@@ -111,26 +152,48 @@ def load_csv_to_db(conn, zip_path, table_name):
     """
     with zipfile.ZipFile(zip_path, "r") as zf:
         file_list = zf.namelist()
+
+        #DOWNSAMPLING FOR TESTING
+        file_list = file_list[:2]
+
+        #RM THIS FOR SUBMITTAL
+
+
+
+
         #For each csv file in zip file
         for csv_file in file_list:
             with zf.open(csv_file) as f:
                 text_file = io.TextIOWrapper(f, encoding="utf-8")
                 reader = csv.reader(text_file)
                 headers = next(reader)[0:]  # Get column names
-
                 # Prepare INSERT statement
                 placeholders = ",".join("?" for _ in headers)
-                insert_sql = (
-                    f"INSERT INTO {table_name} ({','.join(headers)})"
-                    f" VALUES ({placeholders})"
-                )
+                headers = ['market'] + headers
+
+                if 'NASDAQ' in str(csv_file):
+                    insert_sql = (
+                        f"INSERT INTO {table_name} ({','.join(headers)})"
+                        f" VALUES ('NASDAQ',{placeholders})"
+                    )
+                if 'NYSE' in str(csv_file):
+                    insert_sql = (
+                        f"INSERT INTO {table_name} ({','.join(headers)})"
+                        f" VALUES ('NYSE',{placeholders})"
+                    )
+
+
                 # Insert all rows
                 cur = conn.cursor()
                 # import pdb; pdb.set_trace()
                 cur.executemany(insert_sql, reader)
                 conn.commit()
-            print(f"Loaded {cur.rowcount} rows to {table_name} successfully")
-            return True
+
+
+
+
+            print(f"Loaded {csv_file} {cur.rowcount} rows to {table_name} successfully")
+    return True
 
 def create_db_connection():
     """Sqlite specific connection function
@@ -159,11 +222,11 @@ def load_all_stock_data():
         ]
         # For each zip file
         for zip_path in all_files:
+
             logging.info(f"Loading {zip_path.split('/')[-1]} data...")
             try:
                 load_csv_to_db(conn, zip_path, table_name)
-                return
-
+                
             except zipfile.BadZipFile:
 
               logging.error(f"Invalid zip file: {zip_path}")

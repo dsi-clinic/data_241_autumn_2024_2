@@ -5,7 +5,7 @@ import logging
 import pandas as pd
 from flask import jsonify
 
-from stock_app.api.data_utils.loading_utils import load_all_stock_data
+from stock_app.api.data_utils.loading_utils import load_data
 from stock_app.api.route_utils.decorators import authenticate_request
 
 # Configure logging
@@ -14,7 +14,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Load stock data
 try:
-    stock_data = load_all_stock_data()
+    stock_data = load_data()
 except Exception as e:
     logging.error(f"Failed to load stock data: {e}")
 
