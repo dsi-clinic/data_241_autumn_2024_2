@@ -34,8 +34,8 @@ def register_routes1(app):
         market_counts = stock_data["market"].value_counts().to_dict()
         return jsonify(
             {
-                "nyse": market_counts.get("nyse", 0),
-                "nasdaq": market_counts.get("nasdaq", 0),
+                "NYSE": market_counts.get("NYSE", 0),
+                "NASDAQ": market_counts.get("NASDAQ", 0),
             }
         )
 
