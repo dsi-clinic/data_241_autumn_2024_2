@@ -3,7 +3,7 @@
 import logging
 import pandas as pd
 from flask import jsonify
-from stock_app.api.data_utils.loading_utils import load_data
+from stock_app.api.data_utils.loading_utils import load_stock_data
 from stock_app.api.route_utils.decorators import authenticate_request
 
 # Configure logging
@@ -11,7 +11,7 @@ logging.basicConfig(level=logging.INFO)
 
 # Load stock data
 try:
-    stock_data = load_data()
+    stock_data = load_stock_data()
     # Ensure columns are consistently lowercase
     stock_data.columns = stock_data.columns.str.lower()
 except Exception as e:
