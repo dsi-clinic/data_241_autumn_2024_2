@@ -81,6 +81,7 @@ if __name__ == "__main__":
             "/api/v2/close/AAPL",
             "/api/v2/high/AAPL",
             "/api/v2/low/AAPL",
+            "/api/v3/accounts/1"
         ]
 
         for endpoint in list_endpoint:
