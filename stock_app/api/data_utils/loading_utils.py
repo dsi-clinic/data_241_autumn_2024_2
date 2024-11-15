@@ -8,6 +8,7 @@ import zipfile
 from os import listdir
 from pathlib import Path
 import pandas as pd
+import os
 
 
 def execute_sql_command(conn, sql_query):
@@ -314,9 +315,47 @@ def load_all_stock_data():
         logging.error(f"Error loading stock data: {e}")
         raise RuntimeError(f"Error loading stock data: {e}") from None
 
+#In the UTILS
 
-import os
-from pathlib import Path
+def add_stocks_data(stock_data_info):
+    conn = create_db_connection()
+    query = """
+    INSERT INTO stocks_owned
+    (account_id, symbol, purchase_date, sale_date, number_of_shares)
+    VALUES
+    (?, ?, ?, ?, ?)
+    """
+    params = (
+        stock_data_info["account_id"],
+        stock_data_info["symbol"],
+        stock_data_info["purchase_date"],
+        stock_data_info["sale_date"],
+        stock_data_info["number_of_shares"],)
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    conn.commit()
+
+def remove_stocks_data(stock_data_info):
+
+    conn = create_db_connection()
+
+
+    # Then delete the player
+    delete_query = """
+    DELETE FROM stocks_owned
+    WHERE account_id = ?
+    AND symbol = ?
+    AND purchase_date = ?
+    AND sale_date = ?
+    AND number_of_shares = ?
+    """
+
+    cursor = conn.cursor()
+    cursor.execute(delete_query, (stock_data_info,))
+    conn.commit()
+
+    return
+    
 
 def rm_db():
     """Delete the Database files
