@@ -5,11 +5,9 @@ import sqlite3
 from flask import jsonify
 from stock_app.api.route_utils.decorators import authenticate_request
 from stock_app.api.data_utils.loading_utils import execute_stock_q
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
-
-
-
 
 
 def get_market_counts():
@@ -22,8 +20,9 @@ def get_market_counts():
     try:
         counts = execute_stock_q(query).fetchall()
         market_counts = {market.lower(): count for market, count in counts}
-        return {"nyse": market_counts.get("nyse", 0),
-                "nasdaq": market_counts.get("nasdaq", 0),
+        return {
+            "nyse": market_counts.get("nyse", 0),
+            "nasdaq": market_counts.get("nasdaq", 0),
         }
     except Exception as e:
         logging.error(f"Database query failed: {e}")
@@ -60,7 +59,6 @@ def get_row_count():
         return None
 
 
-
 def register_routes1(app):
     """Registers Part 1 Routes"""
 
@@ -78,7 +76,6 @@ def register_routes1(app):
             return jsonify({"error": "Failed to retrieve market data"}), 500
         return jsonify(market_counts)
 
-
     @app.route("/api/v1/unique_stock_count", methods=["GET"])
     @authenticate_request
     def unique_stock_count_route():
@@ -89,9 +86,10 @@ def register_routes1(app):
         """
         unique_count = get_unique_stock_count()
         if unique_count is None:
-            return jsonify({"error": "Failed to retrieve stock symbol data"}), 500
+            return jsonify(
+                {"error": "Failed to retrieve stock symbol data"}
+            ), 500
         return jsonify({"unique_stock_count": unique_count})
-    
 
     @app.route("/api/v1/row_count", methods=["GET"])
     @authenticate_request

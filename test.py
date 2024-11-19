@@ -1,167 +1,75 @@
 """Tests Flask server against requests"""
 
 import os
-
 import requests
 
 
 def make_get_request(endpoint, api_key):
-    """Sends GET request with API key to specified Flask API endpoint.
-
-    Args:
-        endpoint (str): The API endpoint to send the GET request to.
-        api_key (str): The API key to authenticate the request.
-
-    Returns:
-        response (requests.Response):
-        The response object from the GET request if successful
-
-        otherwise:
-        None if an error occurs.
-    """
-    # Base URL for the Flask app running in Docker
-
     base_url = "http://127.0.0.1:4000"
     full_url = base_url + endpoint
-
-    # Define the request headers
     headers = {
-        "DATA-241-API-KEY": api_key,  # API key included in the header
+        "DATA-241-API-KEY": api_key,
         "Content-Type": "application/json",
     }
 
     try:
-        # Send the GET request
         response = requests.get(full_url, headers=headers)
-
-        # Raise an HTTPError for bad responses (4xx and 5xx)
-        response.raise_for_status()
-
-        # Print the response status code
-        print("Status Code:" + str(response.status_code))
-
-        # Print the response content in JSON format
-        print("Response Content:")
-        print(response.json())  # Corrected to properly handle JSON response
-
+        response.raise_for_status()  # Raise an HTTPError for bad responses
+        print("Status Code:", response.status_code)
+        try:
+            print("Response Content:", response.json())
+        except ValueError:
+            print("Response Content is not valid JSON.")
         return response
-
-    except requests.exceptions.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")
-    except requests.exceptions.RequestException as req_err:
-        print(f"Request error occurred: {req_err}")
-    except Exception as err:
-        print(f"An error occurred: {err}")
-
-    return None
-
-
+    except requests.exceptions.RequestException as err:
+        print(f"Error: {err}")
+        return None
 
 
 def make_post_request(endpoint, json, api_key):
-    """Sends POST request with API key to specified Flask API endpoint.
-
-    Args:
-        endpoint (str): The API endpoint to send the POST request to.
-        json (object): Object to post across
-        api_key (str): The API key to authenticate the request.
-
-    Returns:
-        response (requests.Response):
-        The response object from the GET request if successful
-
-        otherwise:
-        None if an error occurs.
-    """
-    # Base URL for the Flask app running in Docker
-
     base_url = "http://127.0.0.1:4000"
     full_url = base_url + endpoint
-
-    # Define the request headers
     headers = {
-        "DATA-241-API-KEY": api_key,  # API key included in the header
+        "DATA-241-API-KEY": api_key,
         "Content-Type": "application/json",
     }
 
     try:
-        #https://www.w3schools.com/PYTHON/ref_requests_post.asp
-        # Send the POST request
-        response = requests.post(full_url, json, headers=headers)
-
-        # Raise an HTTPError for bad responses (4xx and 5xx)
-        response.raise_for_status()
-
-        # Print the response status code
-        print("Status Code:" + str(response.status_code))
-
-        # Print the response content in JSON format
-        print("Response Content:")
-        print(response.json())  # Corrected to properly handle JSON response
-
+        # Send the POST request with json
+        response = requests.post(full_url, json=json, headers=headers)
+        response.raise_for_status()  # Raise an HTTPError for bad responses
+        print("Status Code:", response.status_code)
+        try:
+            print("Response Content:", response.json())
+        except ValueError:
+            print("Response Content is not valid JSON.")
         return response
-
-    except requests.exceptions.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")
-    except requests.exceptions.RequestException as req_err:
-        print(f"Request error occurred: {req_err}")
-    except Exception as err:
-        print(f"An error occurred: {err}")
-
-    return None
+    except requests.exceptions.RequestException as err:
+        print(f"Error: {err}")
+        return None
 
 
 def make_delete_request(endpoint, json, api_key):
-    """Sends DELETE request with API key to specified Flask API endpoint.
-
-    Args:
-        endpoint (str): The API endpoint to send the POST request to.
-        json (object): Object to delete
-        api_key (str): The API key to authenticate the request.
-
-    Returns:
-        response (requests.Response):
-        The response object from the GET request if successful
-
-        otherwise:
-        None if an error occurs.
-    """
-    # Base URL for the Flask app running in Docker
-
     base_url = "http://127.0.0.1:4000"
     full_url = base_url + endpoint
-
-    # Define the request headers
     headers = {
-        "DATA-241-API-KEY": api_key,  # API key included in the header
+        "DATA-241-API-KEY": api_key,
         "Content-Type": "application/json",
     }
 
     try:
-        #https://www.geeksforgeeks.org/delete-method-python-requests/
-        # Send the POST request
-        response = requests.delete(full_url, json, headers=headers)
-        # Raise an HTTPError for bad responses (4xx and 5xx)
-        response.raise_for_status()
-
-        # Print the response status code
-        print("Status Code:" + str(response.status_code))
-
-        # Print the response content in JSON format
-        print("Response Content:")
-        print(response.json())  # Corrected to properly handle JSON response
-
+        # Send the DELETE request with json
+        response = requests.delete(full_url, json=json, headers=headers)
+        response.raise_for_status()  # Raise an HTTPError for bad responses
+        print("Status Code:", response.status_code)
+        try:
+            print("Response Content:", response.json())
+        except ValueError:
+            print("Response Content is not valid JSON.")
         return response
-
-    except requests.exceptions.HTTPError as http_err:
-        print(f"HTTP error occurred: {http_err}")
-    except requests.exceptions.RequestException as req_err:
-        print(f"Request error occurred: {req_err}")
-    except Exception as err:
-        print(f"An error occurred: {err}")
-
-    return None
-
+    except requests.exceptions.RequestException as err:
+        print(f"Error: {err}")
+        return None
 
 
 if __name__ == "__main__":
@@ -179,55 +87,34 @@ if __name__ == "__main__":
     if not api_key:
         print("Error: The DATA_241_API_KEY environment variable is not set.")
     else:
-        # Testing v2 functions
-        # Add string endpoint to test
+        #V1
+        #make_get_request("/api/v1/row_by_market_count",api_key)
+        #make_get_request("/api/v1/row_count",api_key)
+        #make_get_request("/api/v1/unique_stock_count",api_key)
 
-        """
-        # V1, V2 Endpoints
-        get_list_endpoint = ["/api/v1/row_by_market_count",
-            "/api/v1/row_count",
-            "/api/v1/unique_stock_count",]
-        """
-        
-        #V2 Endpoints
-        get_list_endpoint = ["/api/v2/2019",
-            "/api/v2/open/AAPL",
-            "/api/v2/close/AAPL",
-            "/api/v2/high/AAPL",
-            "/api/v2/low/AAPL",]
+
+        #V2
+        #make_get_request("/api/v2/2019",api_key)
+        #make_get_request(,api_key)
+        #make_get_request(,api_key)
+
+
+
+        #V3
+        make_post_request("/api/v3/accounts",{ 'name' : 'Some_p' }, api_key) #TESTED DONE
+        make_get_request("/api/v3/accounts",api_key) #TESTED DONE
+        #make_delete_request("/api/v3/accounts",{'account_id' : 1 }, api_key)
+
+
+        make_post_request("/api/v3/stocks", { 'account_id' : 1, 'symbol': 'AAPL', 'purchase_date' : "2001/10/10", 'sale_date': "2001/11/10", 'number_of_shares': 10}, api_key) #TESTED DONE
+        make_get_request("/api/v3/stocks/AAPL",api_key) #TESTED DONE
+        #make_delete_request("/api/v3/stocks",{ 'account_id' : 1, 'symbol': 'AAPL', 'purchase_date' : "2001/10/10", 'sale_date': "2001/11/10", 'number_of_shares': 10})
         
 
-        
-        """
-        #V3 STUFF ADDED
-        get_list_endpoint = [
-            "/api/v3/accounts",
-            "/api/v3/accounts/1",
-             "/api/v3/accounts/return/1",
-            "/api/v3/stocks/AAPL",
-        ]
-        """
-        for endpoint in get_list_endpoint:
-            make_get_request(endpoint, api_key)
+        #make_get_request("/api/v3/accounts/1",api_key)
+        #make_get_request("/api/v3/accounts/return/1",api_key)
         
 
 
 
-        """
-        post_list_endpoint = [
-        ("/api/v3/accounts", { 'name' : 'Disha' }),
-        ("/api/v3/stocks", { 'account_id' : 1, 'symbol': 'AAPL', 'purchase_date' : "2001/10/10", 'sale_date': "2001/11/10", 'number_of_shares': 10}),
-        ]
-          for endpoint in post_list_endpoint:
-            make_post_request(endpoint[0],endpoint[1], api_key)
-
-
-        delete_list_endpoint = [
-        ("/api/v3/accounts", { 'account_id' : 1 }),
-        ("/api/v3/stocks", { 'account_id' : 1, 'symbol': 'AAPL', 'purchase_date' : "2001/10/10", 'sale_date': "2001/11/10", 'number_of_shares': 10}),
-        ]
-
-        
-        for endpoint in delete_list_endpoint:
-            make_delete_request(endpoint[0],endpoint[1], api_key)
-       """
+  
