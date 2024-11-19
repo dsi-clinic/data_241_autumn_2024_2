@@ -11,106 +11,26 @@ import pandas as pd
 import os
 
 
-def execute_sql_command(conn, sql_query):
+def execute_sql_command(conn, sql_query,variables=None):
     """Performs SQL command
 
     Returns:
             None
     """
     cur = conn.cursor()
-    cur.execute(sql_query)
+    if variables == None:
+        cur.execute(sql_query)
+    else:
+        cur.execute(sql_query,variables)
     conn.commit()
     return None
 
 
-def execute_query_return_list_of_dicts_lm(conn, sql_query):
-    """Low memory version of loading command command
+def execute_stock_q(query):
+    cursor = sqlite3.connect("/app/src/data/stocks.db").cursor()
+    cursor.execute(query)
+    return cursor
 
-    Returns:
-            Dictionary list of SQL query
-    """
-    cursor = conn.cursor()
-    cursor.execute(sql_query)
-    description_info = cursor.description
-
-    headers = [x[0] for x in description_info]
-    return_dict_list = []
-
-    while True:
-        single_result = cursor.fetchone()
-
-        if not single_result:
-            break
-
-        single_result_dict = dict(zip(headers, single_result))
-        return_dict_list.append(single_result_dict)
-
-    return return_dict_list
-
-#CHANGED THIS TO STOCK DATA
-#CHANGE FOR EACH ROUTE IN PULLIN IN DATA
-#____________________________________________________________________
-def load_stock_data():
-    """Loading data into pandas DF
-
-    Returns:
-            Dataframe containing all of the stock data
-    """
-    print("Loading Data")
-    conn = create_db_connection()
-    query = """select market,
-            Symbol,
-            Date,
-            Open,
-            High,
-            Low,
-            Close,
-            Volume
-         from stocks
-    """
-    fetch_data = pd.DataFrame(
-        execute_query_return_list_of_dicts_lm(conn, query)
-    )
-    return fetch_data
-
-
-def load_account_data():
-    """Loading data into pandas DF
-
-    Returns:
-            Dataframe containing all of the account data
-    """
-    print("Loading Data")
-    conn = create_db_connection()
-    query = """select id,
-            name
-         from accounts
-    """
-    fetch_data = pd.DataFrame(
-        execute_query_return_list_of_dicts_lm(conn, query)
-    )
-    return fetch_data
-
-
-def load_stocks_owned_data():
-    """Loading data into pandas DF
-
-    Returns:
-            Dataframe containing all of the stocks_owned data
-    """
-    print("Loading Data")
-    conn = create_db_connection()
-    query = """select account_id,
-            symbol,
-            purchase_date,
-            sale_date,
-            number_of_shares
-         from accounts
-    """
-    fetch_data = pd.DataFrame(
-        execute_query_return_list_of_dicts_lm(conn, query)
-    )
-    return fetch_data
 
 #___________________________________________________________________
 
