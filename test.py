@@ -185,14 +185,20 @@ if __name__ == "__main__":
         """
         # V1, V2 Endpoints
         get_list_endpoint = ["/api/v1/row_by_market_count",
-            "/api/v2/2019",
+            "/api/v1/row_count",
+            "/api/v1/unique_stock_count",]
+        """
+        
+        #V2 Endpoints
+        get_list_endpoint = ["/api/v2/2019",
             "/api/v2/open/AAPL",
             "/api/v2/close/AAPL",
             "/api/v2/high/AAPL",
             "/api/v2/low/AAPL",]
         
-        """
 
+        
+        """
         #V3 STUFF ADDED
         get_list_endpoint = [
             "/api/v3/accounts",
@@ -200,12 +206,20 @@ if __name__ == "__main__":
              "/api/v3/accounts/return/1",
             "/api/v3/stocks/AAPL",
         ]
+        """
+        for endpoint in get_list_endpoint:
+            make_get_request(endpoint, api_key)
         
 
+
+
+        """
         post_list_endpoint = [
         ("/api/v3/accounts", { 'name' : 'Disha' }),
         ("/api/v3/stocks", { 'account_id' : 1, 'symbol': 'AAPL', 'purchase_date' : "2001/10/10", 'sale_date': "2001/11/10", 'number_of_shares': 10}),
         ]
+          for endpoint in post_list_endpoint:
+            make_post_request(endpoint[0],endpoint[1], api_key)
 
 
         delete_list_endpoint = [
@@ -213,10 +227,7 @@ if __name__ == "__main__":
         ("/api/v3/stocks", { 'account_id' : 1, 'symbol': 'AAPL', 'purchase_date' : "2001/10/10", 'sale_date': "2001/11/10", 'number_of_shares': 10}),
         ]
 
-        for endpoint in get_list_endpoint:
-            make_get_request(endpoint, api_key)
-        for endpoint in post_list_endpoint:
-            make_post_request(endpoint[0],endpoint[1], api_key)
+        
         for endpoint in delete_list_endpoint:
             make_delete_request(endpoint[0],endpoint[1], api_key)
-       
+       """
