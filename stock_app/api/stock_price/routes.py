@@ -1,29 +1,27 @@
-"""Flask Routes V2"""
+"""Flask Routes V2."""
+
+import json
 import logging
 import sqlite3
+
 import pandas as pd
 from flask import jsonify
-from stock_app.api.data_utils.loading_utils import execute_stock_q
+
 from stock_app.api.route_utils.decorators import authenticate_request
-from collections import OrderedDict
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
 
-import json
-
-def get_prices(symbol, price_type):
-    """
-    Fetch price information for a specific stock symbol.
+def get_prices(symbol: str, price_type: str):
+    """Fetch price information for a specific stock symbol.
 
     Args:
         symbol (str): Stock symbol to lookup.
         price_type (str): Type of price ('Open', 'Close', 'High', 'Low').
 
     Returns:
-        JSON: { 'symbol': <symbol>, 'price_info': <list_of_prices> }
-              or JSON: {'error': 'Symbol not found in the data'}
+        tuple: A JSON response and HTTP status code.
     """
     # Ensure consistent formatting
     symbol = symbol.upper()
@@ -32,7 +30,12 @@ def get_prices(symbol, price_type):
     # Validate the price_type input to prevent SQL injection
     valid_price_types = {"Open", "Close", "High", "Low"}
     if price_type not in valid_price_types:
-        return json.dumps({"error": f"Invalid price type: {price_type}. Allowed values: {list(valid_price_types)}"}), 400
+        return json.dumps({
+            "error": (
+                f"Invalid price type: {price_type}. "
+                f"Allowed values: {list(valid_price_types)}"
+            )
+        }), 400
 
     # Construct the query with a WHERE clause for symbol
     query = f"SELECT Symbol, Date, {price_type} FROM stocks WHERE Symbol = ?"
@@ -46,7 +49,9 @@ def get_prices(symbol, price_type):
 
         # If no rows are found
         if not rows:
-            return json.dumps({"error": f"Symbol '{symbol}' not found in the data"}), 404
+            return json.dumps({
+                "error": f"Symbol '{symbol}' not found in the data"
+            }), 404
 
         # Create a DataFrame with explicit column names
         symbol_df = pd.DataFrame(rows, columns=["Symbol", "Date", price_type])
@@ -57,19 +62,23 @@ def get_prices(symbol, price_type):
         ).dt.strftime("%Y-%b-%d")
 
         # Check for invalid dates
-        if symbol_df["Date"].isnull().any():
+        if symbol_df["Date"].isna().any():  # Fix for PD003
             logging.error("Invalid date format detected in the database.")
             return json.dumps({"error": "Invalid date format in data"}), 500
 
         # Prepare the response
         price_info = symbol_df.apply(
-            lambda row: {"date": row["Date"], price_type.lower(): row[price_type]}, axis=1
+            lambda row: {
+                "date": row["Date"],
+                price_type.lower(): row[price_type]
+            },
+            axis=1
         ).tolist()
 
         # Explicitly construct the ordered JSON response
         response = {
-            "symbol": symbol,  # Ensure 'symbol' is the first key
-            "price_info": price_info
+            "symbol": symbol,
+            "price_info": price_info,
         }
 
         # Use json.dumps to control serialization
@@ -86,32 +95,53 @@ def get_prices(symbol, price_type):
         return json.dumps({"error": "An unexpected error occurred"}), 500
 
 
-def get_year_count(year):
+def get_year_count(year: str) -> int:
+    """Get the count of records for a specific year.
+
+    Args:
+        year (str): The year to filter records.
+
+    Returns:
+        int: Count of records for the given year.
+    """
     query = "SELECT COUNT(*) FROM stocks WHERE SUBSTR(Date, -4) = ?"
-    cursor = sqlite3.connect("/app/src/data/stocks.db").cursor()
-    count = cursor.execute(query, (year,)).fetchone()[0]
+    with sqlite3.connect("/app/src/data/stocks.db") as conn:
+        cursor = conn.cursor()
+        count = cursor.execute(query, (year,)).fetchone()[0]
     return count
 
 
 def register_routes2(app):
-    """Registers Part 2 Routes"""
-
+    """Registers Part 2 Routes."""
     @app.route("/api/v2/<price_type>/<symbol>", methods=["GET"])
-    def price_endpoint(price_type, symbol):
+    def price_endpoint(price_type: str, symbol: str):
+        """Endpoint for fetching stock prices by type and symbol.
+
+        Args:
+            price_type (str): Type of price ('Open', 'Close', 'High', 'Low').
+            symbol (str): Stock symbol to lookup.
+
+        Returns:
+            JSON: Response with price details or error message.
+        """
         if not price_type:
             return jsonify({"error": "Price type is required"}), 400
 
-        # Assume get_prices() returns a valid response or raises an error
         response = get_prices(symbol, price_type)
         if response is None:
-            return jsonify({"error": f"No data found for symbol {symbol}"}), 404
+            return jsonify({
+                "error": f"No data found for symbol {symbol}"
+            }), 404
 
         return response
 
     @app.route("/api/v2/<year>", methods=["GET"])
     @authenticate_request
-    def count_year(year):
+    def count_year(year: str):
         """Returns the number of rows for a specific year in the stock data.
+
+        Args:
+            year (str): The year to filter stock data.
 
         Returns:
             JSON: { 'year': <year>, 'count': <row_count> }
