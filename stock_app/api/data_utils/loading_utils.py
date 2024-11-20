@@ -8,6 +8,13 @@ import zipfile
 from os import listdir
 from pathlib import Path
 
+DB_PATH = "/app/src/data/stocks.db"
+
+def get_db_connection():
+    """Get a database connection."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # Enable dictionary-like row access
+    return conn
 
 def execute_sql_command(conn, sql_query, variables=None):
     """Performs SQL command
@@ -24,8 +31,8 @@ def execute_sql_command(conn, sql_query, variables=None):
     return None
 
 
-def execute_stock_q(query: str):
-    """Executes a stock-related SQL query.
+def execute_stock_q(query: str, parameter = None, fetch_all=True):
+    """Executes a stock-related delete SQL query.
 
     Args:
         query: SQL query string to execute.
@@ -33,9 +40,36 @@ def execute_stock_q(query: str):
     Returns:
         Cursor object after query execution.
     """
-    cursor = sqlite3.connect("/app/src/data/stocks.db").cursor()
-    cursor.execute(query)
-    return cursor
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        # Execute parameter
+        if parameter is None:
+            cursor.execute(query)
+        else:
+           cursor.execute(query,parameter)
+
+        # Handle SELECT queries
+        if query.strip().upper().startswith("SELECT"):
+            if fetch_all:
+                return cursor.fetchall()  # Fetch all rows
+            else:
+                return cursor.fetchone()  # Fetch a single row
+        else:
+            # Commit changes for non-SELECT queries
+            conn.commit()
+        
+        return cursor
+    
+    except sqlite3.Error as e:
+        logging.error(f"Database error: {e}")
+        raise RuntimeError(f"Database error: {e}")
+
+    finally:
+        conn.close()
+
+    
 
 
 def create_stocks_table(conn):
