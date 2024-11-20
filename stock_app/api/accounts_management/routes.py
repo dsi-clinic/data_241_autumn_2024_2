@@ -1,388 +1,202 @@
-"""ROUTES v3"""
-import logging
+"""Routes for Version 3 of the API."""
+
 import json
+import logging
 import sqlite3
-from flask import jsonify, request, Response
+
+from flask import Response, jsonify, request
+
+from stock_app.api.data_utils.loading_utils import execute_stock_q
 from stock_app.api.route_utils.decorators import authenticate_request
 
-# Path to your SQLite database file
+# Path to SQLite database
 DB_PATH = "/app/src/data/stocks.db"
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 
 
-# Utility for Database Connection
-def get_db_connection():
-    """Get a database connection."""
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row  # Enable dictionary-like row access
-    return conn
-
-
 def get_account_data():
-    """Returns a list of all accounts."""
+    """Fetches all accounts.
+
+    Returns:
+        JSON response with a list of accounts or an error message.
+    """
     try:
-        conn = get_db_connection()
-        accounts = conn.execute(
-            "SELECT id AS account_id, name FROM accounts"
-        ).fetchall()
-        conn.close()
+        query = "SELECT id AS account_id, name FROM accounts"
+        accounts = execute_stock_q(query)
+
         if not accounts:
-          return []
-        else:
-          return jsonify([dict(account) for account in accounts]), 200
+            return jsonify([]), 200
+
+        return jsonify([dict(account) for account in accounts]), 200
+
     except Exception as e:
-        logging.error(f"Error fetching accounts: {e}")
-        return jsonify({"error": str(e)}), 500
+        logging.error("Error fetching accounts: %s", e)
+        return jsonify({"error": "Internal server error"}), 500
 
 
 def add_account():
-    """Creates a new account."""
+    """Creates a new account.
+
+    Returns:
+        JSON response with created account details or an error message.
+    """
     try:
         data = request.get_json()
         name = data.get("name")
+
         if not name:
             return jsonify({"error": "Name is required"}), 400
 
-        conn = get_db_connection()
-        existing = conn.execute(
-            "SELECT 1 FROM accounts WHERE name = ?", (name,)
-        ).fetchone()
-
-        if existing:
-            conn.close()
+        query_check = "SELECT 1 FROM accounts WHERE name = ?"
+        if execute_stock_q(query_check, (name,), fetch_all=False):
             return jsonify({"error": "Account already exists"}), 409
 
-        conn.execute("INSERT INTO accounts (name) VALUES (?)", (name,))
-        conn.commit()
-        account_id = conn.execute(
-            "SELECT last_insert_rowid() AS id"
-        ).fetchone()["id"]
-        conn.close()
+        query_insert = "INSERT INTO accounts (name) VALUES (?)"
+        execute_stock_q(query_insert, (name,), fetch_all=False)
+
+        query_last_id = "SELECT last_insert_rowid() AS id"
+        account_id = execute_stock_q(query_last_id, fetch_all=False)["id"]
 
         return jsonify({"account_id": account_id, "name": name}), 201
+
     except Exception as e:
-        logging.error(f"Error adding account: {e}")
-        return jsonify({"error": str(e)}), 500
+        logging.error("Error adding account: %s", e)
+        return jsonify({"error": "Internal server error"}), 500
 
 
 def delete_account():
-    """Deletes an account."""
+    """Deletes an account and associated stock holdings.
+
+    Returns:
+        JSON response with a success message or an error message.
+    """
     try:
         data = request.get_json()
         account_id = data.get("account_id")
 
-        conn = get_db_connection()
-        conn.execute("DELETE FROM accounts WHERE id = ?", (account_id,))
-        conn.commit()
+        if not account_id:
+            return jsonify({"error": "Account ID is required"}), 400
 
-        if conn.total_changes == 0:
-            conn.close()
-            return jsonify([]), 404
-
-        conn.execute(
-            "DELETE FROM stocks_owned WHERE account_id = ?", (account_id,)
+        query_delete_account = "DELETE FROM accounts WHERE id = ?"
+        result = execute_stock_q(
+            query_delete_account, 
+            (account_id,), 
+            fetch_all=False
         )
-        conn.commit()
-        conn.close()
+
+        if not result or result.rowcount == 0:
+            return jsonify({"error": "Account not found"}), 404
+
+        query_delete_stocks = "DELETE FROM stocks_owned WHERE account_id = ?"
+        execute_stock_q(query_delete_stocks, (account_id,), fetch_all=False)
+
         return jsonify([]), 204
+
     except Exception as e:
-        logging.error(f"Error deleting account: {e}")
-        return jsonify({"error": str(e)}), 500
+        logging.error("Error deleting account: %s", e)
+        return jsonify({"error": "Internal server error"}), 500
 
 
 def get_id_stock(acc_id):
-    """
-    Get all stock holdings for a specific account ID.
+    """Fetch all stock holdings for a specific account ID.
 
     Args:
-        acc_id (int): The account ID to retrieve holdings for.
+        acc_id (int): The account ID.
 
     Returns:
-        JSON response:
-            {
-                "account_id": int,
-                "name": str,
-                "stock_holdings": [
-                    {"symbol": str, "purchase_date": str, "sale_date": str, "number_of_shares": int},
-                    ...
-                ]
-            }
+        JSON response with account details and stock holdings.
     """
     try:
-        # Get a database connection
-        conn = get_db_connection()
+        query_account = "SELECT name FROM accounts WHERE id = ?"
+        account = execute_stock_q(query_account, (acc_id,), fetch_all=False)
 
-        # Fetch account name
-        account = conn.execute("SELECT name FROM accounts WHERE id = ?", (acc_id,)).fetchone()
         if not account:
-            conn.close()
             return jsonify({"error": "Account not found"}), 404
 
-        account_name = account["name"]
+        query_stocks = "SELECT * FROM stocks_owned WHERE account_id = ?"
+        stock_data = execute_stock_q(query_stocks, (acc_id,))
 
-        # Fetch stock holdings for the account
-        stock_data = conn.execute("SELECT * FROM stocks_owned WHERE account_id = ?", (acc_id,)).fetchall()
-        conn.close()
-
-        # Convert stock holdings to a list of dictionaries
         stock_holdings = [dict(row) for row in stock_data]
 
-        # Construct and return the response
-        return jsonify({
+        response_data = {
             "account_id": acc_id,
-            "name": account_name,
-            "stock_holdings": stock_holdings
-        }), 200
+            "name": account["name"],
+            "stock_holdings": stock_holdings,
+        }
+        return jsonify(response_data), 200
+
 
     except Exception as e:
-        logging.error(f"Error getting stock data for account ID {acc_id}: {e}")
+        logging.error(
+            "Error fetching stock data for account ID %s: %s",
+            acc_id,
+            e,
+        )
+
         return jsonify({"error": "Internal server error"}), 500
 
 
 def get_stock_data(symbol):
-    """
-    Returns stock holdings for a specific symbol across all accounts.
+    """Fetch stock holdings for a specific symbol.
 
     Args:
-        symbol (str): The stock symbol to filter holdings.
+        symbol (str): Stock symbol.
 
     Returns:
-        JSON response:
-            {
-                'symbol': str,
-                'holdings': [
-                    {'account_id': int, 'purchase_date': str, 'sale_date': str, 'number_of_shares': int}, ...
-                ]
-            }
+        JSON response with stock data or an error message.
     """
     try:
-        # Connect to the database
-        conn = get_db_connection()
-
-        # Query stock holdings for the given symbol
-        holdings = conn.execute(
-            """
+        query = """
             SELECT account_id, purchase_date, sale_date, number_of_shares
             FROM stocks_owned
             WHERE symbol = ?
-            """,
-            (symbol,),
-        ).fetchall()
-        
-        # Close the database connection
-        conn.close()
+        """
+        holdings = execute_stock_q(query, (symbol,))
 
-        # Convert holdings to a list of dictionaries
         holdings_list = [
-            {key: row[key] for key in row.keys()} for row in holdings
+            {key: row[key] for key in row.keys()}
+            for row in holdings
         ]
 
-        # Construct the response with the desired key order
-        stock_holdings = {
+
+        response_data = {
             "symbol": symbol,
-            "holdings": holdings_list
+            "holdings": holdings_list,
         }
+        return Response(
+            json.dumps(response_data),
+            mimetype="application/json",
+            status=200,
+        )
 
-        # Use Flask Response and json.dumps to preserve key order
-        return Response(json.dumps(stock_holdings), mimetype='application/json', status=200)
 
-    except sqlite3.Error as db_error:
-        # Handle specific database errors
-        logging.error(f"Database error fetching stock data for symbol {symbol}: {db_error}")
+    except sqlite3.Error as e:
+        logging.error(
+            "Database error fetching stock data for symbol %s: %s",
+            symbol,
+            e,
+        )
+
         return jsonify({"error": "Database error"}), 500
 
     except Exception as e:
-        # Handle unexpected errors
-        logging.error(f"Unexpected error fetching stock data for symbol {symbol}: {e}")
+        logging.error(
+            "Unexpected error fetching stock data for symbol %s: %s",
+            symbol,
+            e,
+        )
+
         return jsonify({"error": "Internal server error"}), 500
 
 
-def add_stock_data():
-    """Adds new stock data."""
-    try:
-        conn = get_db_connection()
-        data = request.get_json()
-        account_id_v = data.get("account_id")
-        symbol_v = data.get("symbol")
-        purchase_date_v = data.get("purchase_date")
-        sale_date_v = data.get("sale_date")
-        number_of_shares_v = data.get("number_of_shares")
-
-
-        purchase_date_in_stock = conn.execute(
-            """
-            SELECT Date
-            FROM stocks
-            WHERE Date = ?
-            """,
-            (purchase_date_v,),
-        ).fetchone()
-
-        sale_date_in_stock = conn.execute(
-            """
-            SELECT Date
-            FROM stocks
-            WHERE Date = ?
-            """,
-            (sale_date_v,),
-        ).fetchone()
-
-        if not purchase_date_in_stock or not sale_date_in_stock:
-            return jsonify({"error": "Invalid date"}), 400
-
-
-        if not all([
-            account_id_v,
-            symbol_v,
-            purchase_date_v,
-            number_of_shares_v
-        ]):
-
-            return jsonify({"error": "Missing required fields"}), 400
-
-        
-        conn.execute(
-            """
-            INSERT INTO stocks_owned (
-                account_id, symbol, purchase_date, sale_date, number_of_shares
-            ) VALUES (?, ?, ?, ?, ?)
-            """,
-                    (
-            account_id_v,
-            symbol_v,
-            purchase_date_v,
-            sale_date_v,
-            number_of_shares_v,
-        ),
-        )
-        conn.commit()
-        conn.close()
-
-        return jsonify({
-            "account_id": account_id_v,
-            "symbol": symbol_v,
-            "purchase_date": purchase_date_v,
-            "sale_date": sale_date_v,
-            "number_of_shares": number_of_shares_v
-        }), 201
-    except Exception as e:
-        logging.error(f"Error adding stock data: {e}")
-        return jsonify({"error": str(e)}), 500
-
-def delete_stock_data():
-    """Deletes stock data."""
-    try:
-
-        data = request.get_json()
-        account_id_v = data.get("account_id")
-        symbol_v = data.get("symbol")
-        purchase_date_v = data.get("purchase_date")
-        sale_date_v = data.get("sale_date")
-        number_of_shares_v = data.get("number_of_shares")
-
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute(
-            """
-            DELETE FROM stocks_owned
-            WHERE account_id = ? AND symbol = ? AND purchase_date = ?
-            AND sale_date = ? AND number_of_shares = ?
-            """,
-            (
-            account_id_v,
-            symbol_v,
-            purchase_date_v,
-            sale_date_v,
-            number_of_shares_v,
-        ),
-        )
-
-        if cursor.rowcount == 0:
-            return jsonify({"error": "Stock data not found for deletion"}), 404
-
-        conn.commit()
-        conn.close()
-        return "", 204
-    except Exception as e:
-        logging.error(
-            f"Error deleting stock data for account_id: {account_id_v}, "
-            f"symbol: {symbol_v}: {e}"
-        )
-
-        return jsonify({"error": "Failed to delete stock data"}), 500
-
-
-def calculate_account_returns(account_id):
-    """
-    Returns the nominal return for all stock holdings of an account.
-
-    Parameters:
-    - account_id: int
-
-    Returns:
-    {
-        'account_id': int,
-        'return': float
-    }
-
-    Status Codes:
-    - 200: Successfully calculated.
-    - 404: Account not found.
-    """
-    try:
-        # Check if account exists
-
-        query_account_check = "SELECT COUNT(*) FROM stocks_owned WHERE account_id = ?"
-        with sqlite3.connect("/app/src/data/stocks.db") as conn:
-            cursor = conn.cursor()
-            cursor.execute(query_account_check, (account_id,))
-            account_exists = cursor.fetchone()[0]
-        if not account_exists:
-            return jsonify({"error": "Account not found"}), 404
-
-        # Calculate the nominal return using a single SQL query
-        query = """
-        SELECT
-            SUM(
-                stocks_owned.number_of_shares *
-                (close_prices.Close - open_prices.Open)
-            ) AS total_return
-        FROM
-            stocks_owned
-        INNER JOIN
-            stocks AS open_prices
-            ON stocks_owned.symbol = open_prices.Symbol
-            AND stocks_owned.purchase_date = open_prices.Date
-        INNER JOIN
-            stocks AS close_prices
-            ON stocks_owned.symbol = close_prices.Symbol
-            AND stocks_owned.sale_date = close_prices.Date
-        WHERE
-            stocks_owned.account_id = ?
-        """
-        with sqlite3.connect("/app/src/data/stocks.db") as conn:
-            cursor = conn.cursor()
-            cursor.execute(query, (account_id,))
-            total_return = cursor.fetchone()[0]
-
-        # If the account has no holdings, return 0.0
-        if total_return is None:
-            total_return = 0.0
-
-        return jsonify({"account_id": account_id, "return": total_return}), 200
-
-    except sqlite3.Error as e:
-        logging.error(f"Database error: {e}")
-        return jsonify({"error": "Failed to calculate returns"}), 500
-
-    except Exception as e:
-        logging.error(f"Unexpected error: {e}")
-        return jsonify({"error": "An unexpected error occurred"}), 500
-
 def register_routes3(app):
-    """Register all routes for version 3."""
+    """Register all API routes for Version 3.
+
+    Args:
+        app (Flask): The Flask application instance.
+    """
     @app.route("/api/v3/accounts", methods=["GET", "POST", "DELETE"])
     @authenticate_request
     def accounts_op():
@@ -397,19 +211,6 @@ def register_routes3(app):
     @authenticate_request
     def stock_data_op_get(symbol):
         return get_stock_data(symbol)
-
-    @app.route("/api/v3/stocks", methods=["POST", "DELETE"])
-    @authenticate_request
-    def stock_data_op_post_del():
-        if request.method == "POST":
-            return add_stock_data()
-        if request.method == "DELETE":
-            return delete_stock_data()
-
-    @app.route("/api/v3/accounts/return/<account_id>", methods=["GET"])
-    @authenticate_request
-    def account_returns(account_id):
-        return calculate_account_returns(account_id)
 
     @app.route("/api/v3/accounts/<acc_id>", methods=["GET"])
     @authenticate_request

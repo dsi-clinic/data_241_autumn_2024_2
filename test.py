@@ -1,6 +1,7 @@
 """Tests Flask server against requests"""
 
 import os
+
 import requests
 
 
@@ -103,13 +104,13 @@ if __name__ == "__main__":
         #V3
 
         #ADD ACCOUNT TO accounts tables in database
-        #make_post_request("/api/v3/accounts",{ 'name' : 'SAWmdaodwawdwadwadwdw' }, api_key) #TESTED DONE
+        make_post_request("/api/v3/accounts",{ "name" : "SAWmdaodwawdwadwadwdw" }, api_key) #TESTED DONE
 
         #GETS ALL ACCOUNTS in accounts
-        #make_get_request("/api/v3/accounts",api_key) #TESTED DONE
+        make_get_request("/api/v3/accounts",api_key) #TESTED DONE
 
         #DELETES ACCOUNT by ACCOUNT_ID
-        #make_delete_request("/api/v3/accounts",{'account_id' : 1 }, api_key) #TESTING DONNEE
+        make_delete_request("/api/v3/accounts",{"account_id" : 1 }, api_key) #TESTING DONNEE
 
 
         # ADDS STOCK HOLDING to stock_owned table
@@ -122,7 +123,7 @@ if __name__ == "__main__":
 
         #make_post_request("/api/v3/accounts",{ 'name' : 'SAWmdaodwawdwadwadwdw' }, api_key) #TESTED DONE
         #make_post_request("/api/v3/stocks", { 'account_id' : 1, 'symbol': 'AAME', 'purchase_date' : "01-Jan-2010", 'sale_date': "04-Jan-2010", 'number_of_shares': 10}, api_key) #TESTED DONE
-        make_get_request("/api/v3/accounts/1",api_key)
+        #make_get_request("/api/v3/accounts/1",api_key)
         #make_delete_request("/api/v3/stocks", { 'account_id' : 1, 'symbol': 'AAME', 'purchase_date' : "01-Jan-2010", 'sale_date': "04-Jan-2010", 'number_of_shares': 10}, api_key)
         #make_delete_request("/api/v3/accounts",{'account_id' : 1 }, api_key) #TESTING DONNEE
 
