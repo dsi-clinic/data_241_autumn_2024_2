@@ -7,8 +7,6 @@ import sqlite3
 import zipfile
 from os import listdir
 from pathlib import Path
-import pandas as pd
-import os
 
 
 def execute_sql_command(conn, sql_query, variables=None):
@@ -18,7 +16,7 @@ def execute_sql_command(conn, sql_query, variables=None):
             None
     """
     cur = conn.cursor()
-    if variables == None:
+    if variables is None:
         cur.execute(sql_query)
     else:
         cur.execute(sql_query, variables)
@@ -26,13 +24,18 @@ def execute_sql_command(conn, sql_query, variables=None):
     return None
 
 
-def execute_stock_q(query):
+def execute_stock_q(query: str):
+    """Executes a stock-related SQL query.
+
+    Args:
+        query: SQL query string to execute.
+
+    Returns:
+        Cursor object after query execution.
+    """
     cursor = sqlite3.connect("/app/src/data/stocks.db").cursor()
     cursor.execute(query)
     return cursor
-
-
-# ___________________________________________________________________
 
 
 def create_stocks_table(conn):
@@ -57,15 +60,19 @@ def create_stocks_table(conn):
     return
 
 
-# ________________________________________________________
-# ADDED THIS to create accounts table
+def create_accounts_table(conn: sqlite3.Connection):
+    """Creates the 'accounts' table in the database.
 
+    Args:
+        conn: SQLite connection object.
 
-def create_accounts_table(conn):
+    Returns:
+        None
+    """
     create_accounts = """
     CREATE TABLE accounts (
-    id INTEGER PRIMARY KEY,
-    name TEXT NOT NULL
+        id INTEGER PRIMARY KEY,
+        name TEXT NOT NULL
     )
     """
     create_index = """
@@ -74,9 +81,8 @@ def create_accounts_table(conn):
     """
     execute_sql_command(conn, create_accounts)
     execute_sql_command(conn, create_index)
+    return 
 
-
-    return
 
 
 def create_stocks_owned_table(conn):
@@ -85,7 +91,6 @@ def create_stocks_owned_table(conn):
     Returns:
             None
     """
-
     create_stocks_owned = """
     CREATE TABLE stocks_owned (
     account_id INTEGER,
@@ -172,25 +177,27 @@ def load_csv_to_db(conn, zip_path, table_name):
     return True
 
 
-# ADD ACCOUNT
-# ___________________________________________________
 def add_account(account_info):
+    """Adds a new account to the database.
+
+    Args:
+        account_info (dict): Dictionary containing account details, 
+            such as 'name'.
+
+    Returns:
+        None
+    """
     conn = create_db_connection()
     query = """
     INSERT INTO accounts
-    (account_name)
+    (name)
     VALUES
     (?)
     """
-
-    params = account_info["name"]
-
+    params = (account_info["name"],)
     cursor = conn.cursor()
     cursor.execute(query, params)
     conn.commit()
-
-
-# __________________________________________________
 
 
 def create_db_connection():
@@ -244,10 +251,18 @@ def load_all_stock_data():
         raise RuntimeError(f"Error loading stock data: {e}") from None
 
 
-# In the UTILS
-
 
 def add_stocks_data(stock_data_info):
+    """Adds stock data to the 'stocks_owned' table in the database.
+
+    Args:
+        stock_data_info (dict): Dictionary containing stock details, such as
+            'account_id', 'symbol', 'purchase_date', 'sale_date', and
+            'number_of_shares'.
+
+    Returns:
+        None
+    """
     conn = create_db_connection()
     query = """
     INSERT INTO stocks_owned
@@ -268,9 +283,17 @@ def add_stocks_data(stock_data_info):
 
 
 def remove_stocks_data(stock_data_info):
-    conn = create_db_connection()
+    """Removes stock data from the 'stocks_owned' table in the database.
 
-    # Then delete the player
+    Args:
+        stock_data_info (dict): Dictionary containing stock details, such as
+            'account_id', 'symbol', 'purchase_date', 'sale_date', and
+            'number_of_shares'.
+
+    Returns:
+        None
+    """
+    conn = create_db_connection()
     delete_query = """
     DELETE FROM stocks_owned
     WHERE account_id = ?
@@ -279,12 +302,16 @@ def remove_stocks_data(stock_data_info):
     AND sale_date = ?
     AND number_of_shares = ?
     """
-
+    params = (
+        stock_data_info["account_id"],
+        stock_data_info["symbol"],
+        stock_data_info["purchase_date"],
+        stock_data_info["sale_date"],
+        stock_data_info["number_of_shares"],
+    )
     cursor = conn.cursor()
-    cursor.execute(delete_query, (stock_data_info,))
+    cursor.execute(delete_query, params)
     conn.commit()
-
-    return
 
 
 def rm_db():
@@ -303,14 +330,14 @@ def rm_db():
         path = Path(db_path)
         if path.exists() and path.is_file():
             path.unlink()
-    # ______________________________________________________________
+
     if Path(accounts_db_path).exists():
         Path(accounts_db_path).unlink()
     if Path(stocks_owned_db_path).exists():
         Path(stocks_owned_db_path).unlink()
     if Path(db_path).exists():
         Path(db_path).unlink()
-    # ______________________________________________________________
+
     print(f"Databases at {db_path} removed")
 
     return None
