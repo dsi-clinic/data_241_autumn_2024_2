@@ -19,7 +19,7 @@ def get_market_counts():
     """
     query = "SELECT market, COUNT(*) FROM stocks GROUP BY market"
     try:
-        counts = execute_stock_q(query).fetchall()
+        counts = execute_stock_q(query)
         market_counts = {market.lower(): count for market, count in counts}
         return {
             "nyse": market_counts.get("nyse", 0),
@@ -38,7 +38,7 @@ def get_unique_stock_count():
     """
     query = "SELECT COUNT(DISTINCT Symbol) FROM stocks"
     try:
-        uniq = execute_stock_q(query).fetchone()[0]
+        uniq = execute_stock_q(query, fetch_all=False)[0]
         return uniq
     except Exception as e:
         logging.error(f"Database query failed: {e}")
@@ -53,7 +53,7 @@ def get_row_count():
     """
     query = "SELECT COUNT(*) FROM stocks"
     try:
-        row_count = execute_stock_q(query).fetchone()[0]
+        row_count = execute_stock_q(query, fetch_all=False)[0]
         return row_count
     except Exception as e:
         logging.error(f"Database query failed: {e}")
