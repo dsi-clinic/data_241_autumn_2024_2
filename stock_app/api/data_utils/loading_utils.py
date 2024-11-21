@@ -7,8 +7,15 @@ import sqlite3
 import zipfile
 from os import listdir
 from pathlib import Path
-import pandas as pd
-import os
+
+DB_PATH = "/app/src/data/stocks.db"
+
+
+def get_db_connection():
+    """Get a database connection."""
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row  # Enable dictionary-like row access
+    return conn
 
 
 def execute_sql_command(conn, sql_query, variables=None):
@@ -18,18 +25,21 @@ def execute_sql_command(conn, sql_query, variables=None):
             None
     """
     cur = conn.cursor()
-    if variables == None:
+    if variables is None:
         cur.execute(sql_query)
     else:
         cur.execute(sql_query, variables)
     conn.commit()
     return None
 
-def execute_stock_q(query: str, parameter = None, fetch_all=True):
+
+def execute_stock_q(query: str, parameter=None, fetch_all=True):
     """Executes a stock-related delete SQL query.
 
     Args:
         query: SQL query string to execute.
+        parameter: query parameter
+        fetch_all: fetch type
 
     Returns:
         Cursor object after query execution.
@@ -42,7 +52,7 @@ def execute_stock_q(query: str, parameter = None, fetch_all=True):
         if parameter is None:
             cursor.execute(query)
         else:
-           cursor.execute(query,parameter)
+            cursor.execute(query, parameter)
 
         # Handle SELECT queries
         if query.strip().upper().startswith("SELECT"):
@@ -58,7 +68,7 @@ def execute_stock_q(query: str, parameter = None, fetch_all=True):
 
     except sqlite3.Error as e:
         logging.error(f"Database error: {e}")
-        raise RuntimeError(f"Database error: {e}")
+        raise RuntimeError(f"Database error: {e}") from None
 
     finally:
         conn.close()
@@ -94,6 +104,7 @@ def create_stocks_table(conn):
 
 
 def create_accounts_table(conn):
+    """Creates Accounts table"""
     create_accounts = """
     CREATE TABLE accounts (
     id INTEGER PRIMARY KEY,
@@ -106,7 +117,6 @@ def create_accounts_table(conn):
     """
     execute_sql_command(conn, create_accounts)
     execute_sql_command(conn, create_index)
-
 
     return
 
@@ -173,7 +183,6 @@ def load_csv_to_db(conn, zip_path, table_name):
     """
     with zipfile.ZipFile(zip_path, "r") as zf:
         file_list = zf.namelist()
-        file_list = file_list[:2]
         for csv_file in file_list:
             with zf.open(csv_file) as f:
                 text_file = io.TextIOWrapper(f, encoding="utf-8")
@@ -202,8 +211,6 @@ def load_csv_to_db(conn, zip_path, table_name):
             print(f"Loaded {cur.rowcount} rows to {table_name}")
 
     return True
-
-
 
 
 # __________________________________________________
@@ -261,9 +268,6 @@ def load_all_stock_data():
 
 
 # In the UTILS
-
-
-
 
 
 def rm_db():

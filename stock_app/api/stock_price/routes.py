@@ -48,9 +48,7 @@ def get_prices(symbol, price_type):
 
         if not rows:
             return (
-                jsonify(
-                    {"error": f"Symbol '{symbol}' not found in the data"}
-                ),
+                jsonify({"error": f"Symbol '{symbol}' not found in the data"}),
                 404,
             )
 
@@ -70,7 +68,6 @@ def get_prices(symbol, price_type):
             },
             axis=1,
         ).tolist()
-
 
         response = {"symbol": symbol, "price_info": price_info}
         return jsonify(response), 200
@@ -104,8 +101,8 @@ def get_year_count(year):
 
         query = "SELECT COUNT(*) FROM stocks WHERE SUBSTR(Date, -4) = ?"
         result = execute_stock_q(query, (year,), fetch_all=False)
-        count = result[0] if result else 0
 
+        count = result[0] if result else 0
         return jsonify({"year": year, "count": count}), 200
 
     except sqlite3.Error as e:
@@ -133,7 +130,8 @@ def register_routes2(app):
         response = get_prices(symbol, price_type)
         if response is None:
             return (
-                jsonify({"error": f"No data found for symbol {symbol}"}), 404
+                jsonify({"error": f"No data found for symbol {symbol}"}),
+                404,
             )
 
         return response
@@ -143,6 +141,4 @@ def register_routes2(app):
     def count_year(year):
         """Fetch the number of stock rows for a specific year."""
         response = get_year_count(year)
-        if not response.json.get("count", 0):
-            return jsonify({"error": "Year not found in the data"}), 404
         return response

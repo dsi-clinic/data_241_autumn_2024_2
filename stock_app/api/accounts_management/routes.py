@@ -81,9 +81,7 @@ def delete_account():
 
         query_delete_account = "DELETE FROM accounts WHERE id = ?"
         result = execute_stock_q(
-            query_delete_account, 
-            (account_id,), 
-            fetch_all=False
+            query_delete_account, (account_id,), fetch_all=False
         )
 
         if not result or result.rowcount == 0:
@@ -127,7 +125,6 @@ def get_id_stock(acc_id):
         }
         return jsonify(response_data), 200
 
-
     except Exception as e:
         logging.error(
             "Error fetching stock data for account ID %s: %s",
@@ -156,10 +153,8 @@ def get_stock_data(symbol):
         holdings = execute_stock_q(query, (symbol,))
 
         holdings_list = [
-            {key: row[key] for key in row.keys()}
-            for row in holdings
+            {key: row[key] for key in row.keys()} for row in holdings
         ]
-
 
         response_data = {
             "symbol": symbol,
@@ -170,7 +165,6 @@ def get_stock_data(symbol):
             mimetype="application/json",
             status=200,
         )
-
 
     except sqlite3.Error as e:
         logging.error(
@@ -191,15 +185,206 @@ def get_stock_data(symbol):
         return jsonify({"error": "Internal server error"}), 500
 
 
+def add_stock_data():
+    """Adds new stock data to the database."""
+    try:
+        # Parse and validate JSON input
+        data = request.get_json()
+        required_fields = [
+            "account_id",
+            "symbol",
+            "purchase_date",
+            "number_of_shares",
+        ]
+
+        # Validate required fields
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Extract parameters
+        account_id_v = data.get("account_id")
+        symbol_v = data.get("symbol")
+        purchase_date_v = data.get("purchase_date")
+        sale_date_v = data.get("sale_date")
+        number_of_shares_v = data.get("number_of_shares")
+
+        # Validate purchase and sale dates
+        purchase_date_query = """
+        SELECT Date
+        FROM stocks
+        WHERE Date = ?
+        """
+        sale_date_query = """
+        SELECT Date
+        FROM stocks
+        WHERE Date = ?
+        """
+
+        purchase_date_in_stock = execute_stock_q(
+            purchase_date_query, (purchase_date_v,), fetch_all=False
+        )
+        sale_date_in_stock = execute_stock_q(
+            sale_date_query, (sale_date_v,), fetch_all=False
+        )
+
+        if not purchase_date_in_stock or not sale_date_in_stock:
+            return jsonify({"error": "Invalid date"}), 400
+
+        # Insert new stock data
+        insert_query = """
+        INSERT INTO stocks_owned (
+            account_id, symbol, purchase_date, sale_date, number_of_shares
+        ) VALUES (?, ?, ?, ?, ?)
+        """
+        parameters = (
+            account_id_v,
+            symbol_v,
+            purchase_date_v,
+            sale_date_v,
+            number_of_shares_v,
+        )
+        execute_stock_q(insert_query, parameters, fetch_all=False)
+
+        # Return success response
+        return jsonify(
+            {
+                "account_id": account_id_v,
+                "symbol": symbol_v,
+                "purchase_date": purchase_date_v,
+                "sale_date": sale_date_v,
+                "number_of_shares": number_of_shares_v,
+            }
+        ), 201
+
+    except RuntimeError as e:
+        logging.error(f"Error adding stock data: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+def delete_stock_data():
+    """Deletes stock data from the database."""
+    try:
+        # Parse and validate JSON input
+        data = request.get_json()
+        required_fields = [
+            "account_id",
+            "symbol",
+            "purchase_date",
+            "sale_date",
+            "number_of_shares",
+        ]
+
+        # Validate all required fields are present
+        if not all(field in data for field in required_fields):
+            return jsonify({"error": "Missing required fields"}), 400
+
+        # Extract parameters
+        parameters = (
+            data.get("account_id"),
+            data.get("symbol"),
+            data.get("purchase_date"),
+            data.get("sale_date"),
+            data.get("number_of_shares"),
+        )
+
+        # Define SQL query
+        query = """
+        DELETE FROM stocks_owned
+        WHERE account_id = ? AND symbol = ? AND purchase_date = ?
+        AND sale_date = ? AND number_of_shares = ?
+        """
+
+        # Execute the query using the helper function
+        cursor = execute_stock_q(query, parameters, fetch_all=False)
+
+        # Check if a row was deleted
+        if cursor.rowcount == 0:
+            return jsonify({"error": "Stock data not found for deletion"}), 404
+
+        return "", 204
+
+    except RuntimeError as e:
+        logging.error(f"Error deleting stock data. Error: {e}")
+        return jsonify({"error": "Failed to delete stock data"}), 500
+
+
+def calculate_account_returns(account_id):
+    """Returns the nominal return for all stock holdings of an account.
+
+    Parameters:
+    - account_id: int
+
+    Returns:
+    {
+        'account_id': int,
+        'return': float
+    }
+
+    Status Codes:
+    - 200: Successfully calculated.
+    - 404: Account not found.
+    - 500: Internal server error.
+    """
+    try:
+        # Check if the account exists
+        query = "SELECT COUNT(*) FROM stocks_owned WHERE account_id = ?"
+        account_exists = execute_stock_q(
+            query, (account_id,), fetch_all=False
+        )[0]
+
+        if not account_exists:
+            return jsonify({"error": "Account not found"}), 404
+
+        # Calculate the nominal return
+        query_return = """
+        SELECT
+            SUM(
+                stocks_owned.number_of_shares *
+                (close_prices.Close - open_prices.Open)
+            ) AS total_return
+        FROM
+            stocks_owned
+        INNER JOIN
+            stocks AS open_prices
+            ON stocks_owned.symbol = open_prices.Symbol
+            AND stocks_owned.purchase_date = open_prices.Date
+        INNER JOIN
+            stocks AS close_prices
+            ON stocks_owned.symbol = close_prices.Symbol
+            AND stocks_owned.sale_date = close_prices.Date
+        WHERE
+            stocks_owned.account_id = ?
+        """
+        total_return = execute_stock_q(
+            query_return, (account_id,), fetch_all=False
+        )[0]
+
+        # Default return value to 0.0 if no holdings exist
+        if total_return is None:
+            total_return = 0.0
+
+        return jsonify({"account_id": account_id, "return": total_return}), 200
+
+    except sqlite3.Error as e:
+        logging.error(f"Database error: {e}")
+        return jsonify({"error": "Failed to calculate returns"}), 500
+
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        return jsonify({"error": "An unexpected error occurred"}), 500
+
+
 def register_routes3(app):
     """Register all API routes for Version 3.
 
     Args:
         app (Flask): The Flask application instance.
     """
+
     @app.route("/api/v3/accounts", methods=["GET", "POST", "DELETE"])
     @authenticate_request
     def accounts_op():
+        """Gets, Post and Deletes Account data"""
         if request.method == "GET":
             return get_account_data()
         if request.method == "POST":
@@ -210,9 +395,27 @@ def register_routes3(app):
     @app.route("/api/v3/stocks/<symbol>", methods=["GET"])
     @authenticate_request
     def stock_data_op_get(symbol):
+        """Gets stock owned per symbol"""
         return get_stock_data(symbol)
 
     @app.route("/api/v3/accounts/<acc_id>", methods=["GET"])
     @authenticate_request
     def accounts_op_get(acc_id):
+        """Returns stocks owned for an account"""
         return get_id_stock(acc_id)
+
+    @app.route("/api/v3/stocks", methods=["POST", "DELETE"])
+    @authenticate_request
+    def stock_data_op_post_del():
+        """Adds and Deletes Stock Own Data"""
+        if request.method == "POST":
+            return add_stock_data()
+
+        if request.method == "DELETE":
+            return delete_stock_data()
+
+    @app.route("/api/v3/accounts/return/<account_id>", methods=["GET"])
+    @authenticate_request
+    def account_returns(account_id):
+        """Returns profit made"""
+        return calculate_account_returns(account_id)
