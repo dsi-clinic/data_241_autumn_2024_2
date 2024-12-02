@@ -103,7 +103,10 @@ def get_year_count(year):
         result = execute_stock_q(query, (year,), fetch_all=False)
 
         count = result[0] if result else 0
-        return jsonify({"year": year, "count": count}), 200
+        if int(count) == 0:
+            return jsonify({"error": "No data for that year"}), 404
+        else:
+            return jsonify({"year": int(year), "count": int(count)}), 200
 
     except sqlite3.Error as e:
         logging.error(

@@ -183,6 +183,7 @@ def load_csv_to_db(conn, zip_path, table_name):
     """
     with zipfile.ZipFile(zip_path, "r") as zf:
         file_list = zf.namelist()
+        file_list = file_list[:2]
         for csv_file in file_list:
             with zf.open(csv_file) as f:
                 text_file = io.TextIOWrapper(f, encoding="utf-8")
@@ -195,12 +196,12 @@ def load_csv_to_db(conn, zip_path, table_name):
                 if "NASDAQ" in str(csv_file):
                     insert_sql = (
                         f"INSERT INTO {table_name} ({','.join(headers)})"
-                        f" VALUES ('NASDAQ',{placeholders})"
+                        f" VALUES ('nasdaq',{placeholders})"
                     )
                 if "NYSE" in str(csv_file):
                     insert_sql = (
                         f"INSERT INTO {table_name} ({','.join(headers)})"
-                        f" VALUES ('NYSE',{placeholders})"
+                        f" VALUES ('nyse',{placeholders})"
                     )
 
                 cur = conn.cursor()

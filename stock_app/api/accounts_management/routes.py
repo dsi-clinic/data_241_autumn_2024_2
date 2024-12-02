@@ -56,10 +56,10 @@ def add_account():
         query_insert = "INSERT INTO accounts (name) VALUES (?)"
         execute_stock_q(query_insert, (name,), fetch_all=False)
 
-        query_last_id = "SELECT last_insert_rowid() AS id"
-        account_id = execute_stock_q(query_last_id, fetch_all=False)["id"]
+        id_check = "SELECT id FROM accounts WHERE name = ?"
+        account_id = execute_stock_q(id_check, (name,), fetch_all=False)[0]
 
-        return jsonify({"account_id": account_id, "name": name}), 201
+        return jsonify({"account_id": int(account_id)}), 201
 
     except Exception as e:
         logging.error("Error adding account: %s", e)
@@ -119,7 +119,7 @@ def get_id_stock(acc_id):
         stock_holdings = [dict(row) for row in stock_data]
 
         response_data = {
-            "account_id": acc_id,
+            "account_id": int(acc_id),
             "name": account["name"],
             "stock_holdings": stock_holdings,
         }
@@ -194,6 +194,7 @@ def add_stock_data():
             "account_id",
             "symbol",
             "purchase_date",
+            "sale_date",
             "number_of_shares",
         ]
 
@@ -246,15 +247,7 @@ def add_stock_data():
         execute_stock_q(insert_query, parameters, fetch_all=False)
 
         # Return success response
-        return jsonify(
-            {
-                "account_id": account_id_v,
-                "symbol": symbol_v,
-                "purchase_date": purchase_date_v,
-                "sale_date": sale_date_v,
-                "number_of_shares": number_of_shares_v,
-            }
-        ), 201
+        return "", 201
 
     except RuntimeError as e:
         logging.error(f"Error adding stock data: {e}")
@@ -363,7 +356,9 @@ def calculate_account_returns(account_id):
         if total_return is None:
             total_return = 0.0
 
-        return jsonify({"account_id": account_id, "return": total_return}), 200
+        return jsonify(
+            {"account_id": int(account_id), "return": total_return}
+        ), 200
 
     except sqlite3.Error as e:
         logging.error(f"Database error: {e}")
