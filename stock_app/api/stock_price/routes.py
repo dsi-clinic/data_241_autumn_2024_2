@@ -7,7 +7,7 @@ import pandas as pd
 from flask import jsonify
 
 from stock_app.api.data_utils.loading_utils import execute_stock_q
-from stock_app.api.route_utils.decorators import authenticate_request
+from stock_app.api.route_utils.decorators import authenticate_request, log_route
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -125,6 +125,8 @@ def register_routes2(app):
     """Register Part 2 Routes."""
 
     @app.route("/api/v2/<price_type>/<symbol>", methods=["GET"])
+    @log_route
+    @authenticate_request
     def price_endpoint(price_type, symbol):
         """Fetch prices for a given symbol and price type."""
         if not price_type:
@@ -140,6 +142,7 @@ def register_routes2(app):
         return response
 
     @app.route("/api/v2/<year>", methods=["GET"])
+    @log_route
     @authenticate_request
     def count_year(year):
         """Fetch the number of stock rows for a specific year."""

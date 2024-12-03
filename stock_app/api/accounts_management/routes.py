@@ -7,7 +7,7 @@ import sqlite3
 from flask import Response, jsonify, request
 
 from stock_app.api.data_utils.loading_utils import execute_stock_q
-from stock_app.api.route_utils.decorators import authenticate_request
+from stock_app.api.route_utils.decorators import authenticate_request, log_route
 
 # Path to SQLite database
 DB_PATH = "/app/src/data/stocks.db"
@@ -377,6 +377,7 @@ def register_routes3(app):
     """
 
     @app.route("/api/v3/accounts", methods=["GET", "POST", "DELETE"])
+    @log_route
     @authenticate_request
     def accounts_op():
         """Gets, Post and Deletes Account data"""
@@ -388,18 +389,21 @@ def register_routes3(app):
             return delete_account()
 
     @app.route("/api/v3/stocks/<symbol>", methods=["GET"])
+    @log_route
     @authenticate_request
     def stock_data_op_get(symbol):
         """Gets stock owned per symbol"""
         return get_stock_data(symbol)
 
     @app.route("/api/v3/accounts/<acc_id>", methods=["GET"])
+    @log_route
     @authenticate_request
     def accounts_op_get(acc_id):
         """Returns stocks owned for an account"""
         return get_id_stock(acc_id)
 
     @app.route("/api/v3/stocks", methods=["POST", "DELETE"])
+    @log_route
     @authenticate_request
     def stock_data_op_post_del():
         """Adds and Deletes Stock Own Data"""
@@ -410,6 +414,7 @@ def register_routes3(app):
             return delete_stock_data()
 
     @app.route("/api/v3/accounts/return/<account_id>", methods=["GET"])
+    @log_route
     @authenticate_request
     def account_returns(account_id):
         """Returns profit made"""

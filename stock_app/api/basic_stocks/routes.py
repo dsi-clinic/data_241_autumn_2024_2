@@ -5,7 +5,7 @@ import logging
 from flask import jsonify
 
 from stock_app.api.data_utils.loading_utils import execute_stock_q
-from stock_app.api.route_utils.decorators import authenticate_request
+from stock_app.api.route_utils.decorators import authenticate_request, log_route
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -64,6 +64,7 @@ def register_routes1(app):
     """Registers Part 1 Routes"""
 
     @app.route("/api/v1/row_by_market_count", methods=["GET"])
+    @log_route
     @authenticate_request
     def get_row_by_market_count_route():
         """Returns rows for (NASDAQ, NYSE) in the data.
@@ -78,6 +79,7 @@ def register_routes1(app):
         return jsonify(market_counts)
 
     @app.route("/api/v1/unique_stock_count", methods=["GET"])
+    @log_route
     @authenticate_request
     def unique_stock_count_route():
         """Returns the count of unique stocks in the stock data.
@@ -93,6 +95,7 @@ def register_routes1(app):
         return jsonify({"unique_stock_count": unique_count})
 
     @app.route("/api/v1/row_count", methods=["GET"])
+    @log_route
     @authenticate_request
     def row_count_route():
         """Returns the total number of rows in the stock data.
