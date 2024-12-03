@@ -7,6 +7,7 @@ import sqlite3
 import zipfile
 from os import listdir
 from pathlib import Path
+from logger_utils.custom_logger import custom_logger 
 
 DB_PATH = "/app/src/data/stocks.db"
 
@@ -96,6 +97,7 @@ def create_stocks_table(conn):
     )
     """
     execute_sql_command(conn, create_stocks)
+    custom_logger.debug("'stocks' table created successfully.")
     return
 
 
@@ -117,6 +119,7 @@ def create_accounts_table(conn):
     """
     execute_sql_command(conn, create_accounts)
     execute_sql_command(conn, create_index)
+    custom_logger.debug("'accounts' table created successfully.")
 
     return
 
@@ -140,6 +143,8 @@ def create_stocks_owned_table(conn):
     )
     """
     execute_sql_command(conn, create_stocks_owned)
+    custom_logger.debug("'stocks_owned' table created successfully.")
+    
 
 
 # _____________________________________________________________
@@ -208,8 +213,7 @@ def load_csv_to_db(conn, zip_path, table_name):
                 cur.executemany(insert_sql, reader)
                 conn.commit()
 
-            print(f"Loaded {csv_file}")
-            print(f"Loaded {cur.rowcount} rows to {table_name}")
+            custom_logger.debug(f"Loaded {cur.rowcount} rows from {csv_file} to {table_name}")
 
     return True
 
