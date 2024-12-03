@@ -8,6 +8,7 @@ import zipfile
 from os import listdir
 from pathlib import Path
 from logger_utils.custom_logger import custom_logger 
+import time
 
 DB_PATH = "/app/src/data/stocks.db"
 
@@ -182,41 +183,31 @@ def load_csv_to_db(conn, zip_path, table_name):
     """Load a CSV file into an existing SQLite table.
 
     Args:
-        zip_path: Path to the CSV file
-        conn: SQLite connection
-        table_name: Name of the existing table
+        conn: SQLite connection.
+        zip_path: Path to the ZIP file.
+        table_name: Name of the existing table.
     """
     with zipfile.ZipFile(zip_path, "r") as zf:
         file_list = zf.namelist()
-        file_list = file_list[:2]
         for csv_file in file_list:
+            start_time = time.time()
+            
             with zf.open(csv_file) as f:
                 text_file = io.TextIOWrapper(f, encoding="utf-8")
                 reader = csv.reader(text_file)
-                headers = next(reader)[0:]  # Get column names
-                # Prepare INSERT statement
+                headers = next(reader)
                 placeholders = ",".join("?" for _ in headers)
                 headers = ["market"] + headers
+                market_name = "NASDAQ" if "NASDAQ" in csv_file else "NYSE" if "NYSE" in csv_file else "Unknown"
 
-                if "NASDAQ" in str(csv_file):
-                    insert_sql = (
-                        f"INSERT INTO {table_name} ({','.join(headers)})"
-                        f" VALUES ('nasdaq',{placeholders})"
-                    )
-                if "NYSE" in str(csv_file):
-                    insert_sql = (
-                        f"INSERT INTO {table_name} ({','.join(headers)})"
-                        f" VALUES ('nyse',{placeholders})"
-                    )
-
+                insert_sql = f"INSERT INTO {table_name} ({','.join(headers)}) VALUES ('{market_name}', {placeholders})"
+                
                 cur = conn.cursor()
                 cur.executemany(insert_sql, reader)
                 conn.commit()
 
-            custom_logger.debug(f"Loaded {cur.rowcount} rows from {csv_file} to {table_name}")
-
-    return True
-
+            duration = time.time() - start_time
+            custom_logger.debug(f"Loaded data from {csv_file} ({market_name}) into {table_name} in {duration:.2f} seconds.")
 
 # __________________________________________________
 
@@ -236,40 +227,45 @@ def create_db_connection():
 
 
 def load_all_stock_data():
-    """LOADS STOCK DATA INTO TABLE
+    """Loads stock data into the database from ZIP files.
 
     Returns:
-            None
+        None
     """
     try:
         data_path = "/app/src/data/raw_data/"
         table_name = "stocks"
         conn = create_db_connection()
-        # All zip files
+        custom_logger.info("Starting to load all stock data.")
+
         all_files = [
             data_path + f
             for f in listdir(data_path)
             if Path(data_path + f).is_file()
         ]
-        # For each zip file
+
         for zip_path in all_files:
-            logging.info(f"Loading {zip_path.split('/')[-1]} data...")
+            file_name = zip_path.split('/')[-1]
+            custom_logger.info(f"Loading data from {file_name}...")
+
+            start_time = time.time()
             try:
                 load_csv_to_db(conn, zip_path, table_name)
-
             except zipfile.BadZipFile:
-                logging.error(f"Invalid zip file: {zip_path}")
-                raise ValueError(f"Invalid zip file: {zip_path}") from None
-
+                custom_logger.error(f"Invalid ZIP file: {zip_path}")
+                raise ValueError(f"Invalid ZIP file: {zip_path}") from None
             except Exception as e:
-                logging.error(f"Error merging data from {zip_path}: {e}")
-                raise RuntimeError(f"Error merging data: {e}") from None
+                custom_logger.error(f"Error processing data from {zip_path}: {e}")
+                raise RuntimeError(f"Error processing data: {e}") from None
+            finally:
+                duration = time.time() - start_time
+                custom_logger.debug(f"Loaded data from {file_name} in {duration:.2f} seconds.")
 
-        return
-
+        custom_logger.info("All stock data loaded successfully.")
     except Exception as e:
-        logging.error(f"Error loading stock data: {e}")
-        raise RuntimeError(f"Error loading stock data: {e}") from None
+        custom_logger.error(f"Error loading all stock data: {e}")
+        raise RuntimeError(f"Error loading all stock data: {e}") from None
+
 
 
 # In the UTILS
