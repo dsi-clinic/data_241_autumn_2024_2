@@ -93,12 +93,16 @@ route_utils - The route_utils/ directory provides utility functions and decorato
 
 data_utils - The data_utils / directory provides utility functions that parses data that is used by the API routes.
 
+backtesting folder: The backtesting folder contains all modules and files related to the fourth version of the API, which introduces backtesting functionality for trading strategies. 
+
+
+logger_utils: Centralized configuration for the custom logging system used across the project. Defines log levels, formats, and handlers for consistent logging behavior.
+
+custom_logger.py: Has a function called setup_logging() which sets up and returns a custom logger
 
 load_utils.py - Draws data from raw_data folder. Creates, loads, deletes, data into SQLite database.
 
-
-stocks.db - SQLite database storing stock data.
-
+routes.py - inside each folder, there is a routes.py file which basically hosts end points for different versions.
 
 decorators.py - Custom decorators for functions such as API key validation, ensuring that requests meet authentication requirements.
 
