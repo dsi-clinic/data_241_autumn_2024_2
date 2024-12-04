@@ -22,8 +22,8 @@ def get_market_counts():
         counts = execute_stock_q(query)
         market_counts = {market.lower(): count for market, count in counts}
         return {
-            "nyse": market_counts.get("nyse", 0),
-            "nasdaq": market_counts.get("nasdaq", 0),
+            "NYSE": market_counts.get("nyse", 0),
+            "NASDAQ": market_counts.get("nasdaq", 0),
         }
     except Exception as e:
         logging.error(f"Database query failed: {e}")
