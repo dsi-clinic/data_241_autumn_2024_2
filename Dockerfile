@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Install SQLite (required for database operations)
 RUN apt-get update 
-RUN apt-get install -y sqlite3
+RUN apt-get install -y --no-install-recommends sqlite3
 
 # Set environment variables
 ENV PYTHONUNBUFFERED=1

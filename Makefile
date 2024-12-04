@@ -14,6 +14,7 @@ COMMON_DOCKER_FLAGS= \
 	-e FLASK_ENV=development \
 	-e DB_PATH=$(DB_PATH) \
 	-e DATA_DIR=/app/src/data \
+	-e PYTHONPATH=/app/src \
 
 # Build the Docker image
 build:

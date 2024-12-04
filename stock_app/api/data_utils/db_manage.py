@@ -1,9 +1,9 @@
 """Manages and routes the make commands"""
 
 import argparse
-from logger_utils.custom_logger import custom_logger
+from stock_app.api.logger_utils.custom_logger import custom_logger
 import time
-from loading_utils import (
+from stock_app.api.data_utils.loading_utils import (
     create_stocks_db,
     db_clean,
     load_all_stock_data,
