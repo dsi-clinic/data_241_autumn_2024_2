@@ -9,6 +9,7 @@ from os import listdir
 from pathlib import Path
 from stock_app.api.logger_utils.custom_logger import custom_logger
 import time
+from datetime import datetime, timedelta
 
 DB_PATH = "/app/src/data/stocks.db"
 
@@ -89,7 +90,7 @@ def create_stocks_table(conn):
     CREATE TABLE stocks (
         market TEXT,
         Symbol TEXT,
-        Date TEXT,
+        Date Date,
         Open REAL,
         High REAL,
         Low REAL,
@@ -164,14 +165,11 @@ def create_stocks_db():
     print("Connected to Database")
 
     create_stocks_table(conn)
-    print(f"Stocks TABLE created in {db_path}")
 
     # _____________________________________________
     create_accounts_table(conn)
-    print(f"Accounts TABLE created in {db_path}")
 
     create_stocks_owned_table(conn)
-    print(f"Stocks Owned TABLE created in {db_path}")
     # ______________________________________________
 
     conn.close()
@@ -180,32 +178,85 @@ def create_stocks_db():
 
 
 def load_csv_to_db(conn, zip_path, table_name):
-    """Load a CSV file into an existing SQLite table.
+    """Load a CSV file into an existing SQLite table, formatting the date column as needed.
 
     Args:
-        conn: SQLite connection.
-        zip_path: Path to the ZIP file.
-        table_name: Name of the existing table.
+        zip_path: Path to the CSV file
+        conn: SQLite connection
+        table_name: Name of the existing table
     """
     with zipfile.ZipFile(zip_path, "r") as zf:
         file_list = zf.namelist()
-        file_list = file_list[:2]
+        file_list = file_list[:10]  # Load only the first two files
         for csv_file in file_list:
-            
-            
             with zf.open(csv_file) as f:
                 text_file = io.TextIOWrapper(f, encoding="utf-8")
                 reader = csv.reader(text_file)
-                headers = next(reader)
-                placeholders = ",".join("?" for _ in headers)
-                headers = ["market"] + headers
-                market_name = "NASDAQ" if "NASDAQ" in csv_file else "NYSE" if "NYSE" in csv_file else "Unknown"
+                headers = next(reader)[0:]  # Get column names
 
-                insert_sql = f"INSERT INTO {table_name} ({','.join(headers)}) VALUES ('{market_name}', {placeholders})"
-                
+
+                # Identify the index of the 'date' column, if present
+                date_index = None
+                for i, header in enumerate(headers):
+                    if 'date' in header.lower():  # case-insensitive match
+                        date_index = i
+                        break
+
+                # Add 'market' as the first column in the headers
+                headers = ["market"] + headers
+
+                # Prepare the placeholders (one for each header)
+                placeholders = ",".join("?" for _ in headers)
+
+
+                if "NASDAQ" in str(csv_file):
+                    insert_sql = (
+                        f"INSERT INTO {table_name} ({','.join(headers)})"
+                        f" VALUES ({placeholders})"
+                    )
+                elif "NYSE" in str(csv_file):
+                    insert_sql = (
+                        f"INSERT INTO {table_name} ({','.join(headers)})"
+                        f" VALUES ({placeholders})"
+                    )
+
+                # Process each row and format the date column if needed
+                rows_to_insert = []
+                for row in reader:
+                    if date_index is not None:
+                        # Format the date column (example: from 'DD-Mon-YYYY' to 'YYYY-MM-DD')
+                        try:
+                            original_date = row[date_index]
+                            date_obj = datetime.strptime(original_date, "%d-%b-%Y")  # Adjust format as needed
+                            formatted_date = date_obj.strftime("%Y-%m-%d")
+                            row[date_index] = formatted_date
+                        except ValueError:
+                            print(f"Skipping invalid date: {original_date}")
+                            continue  # Skip this row if the date is invalid
+
+                    # Prepend 'market' to the row
+                    row_to_insert = ("nasdaq" if "NASDAQ" in str(csv_file) else "nyse", *row)
+
+                    # Debugging: Check the length of the row and headers
+
+                    if len(row_to_insert) != len(headers):
+                        print("Mismatch in number of columns!")
+                        continue  # Skip this row if there's a mismatch
+
+                    rows_to_insert.append(row_to_insert)
+
+                # Insert the rows into the database
                 cur = conn.cursor()
-                cur.executemany(insert_sql, reader)
-                conn.commit()
+                try:
+                    cur.executemany(insert_sql, rows_to_insert)
+                    conn.commit()
+                except Exception as e:
+                    print(f"Error executing insert: {e}")
+                    continue  # Skip this file and move to the next one
+
+    return True
+
+
 
 # __________________________________________________
 

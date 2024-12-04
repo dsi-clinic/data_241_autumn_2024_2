@@ -54,7 +54,7 @@ def get_prices(symbol, price_type):
 
         symbol_df = pd.DataFrame(rows, columns=["Symbol", "Date", price_type])
         symbol_df["Date"] = pd.to_datetime(
-            symbol_df["Date"], format="%d-%b-%Y", errors="coerce"
+            symbol_df["Date"], format="%Y-%m-%d", errors="coerce"
         ).dt.strftime("%Y-%m-%d")
 
         if symbol_df["Date"].isna().any():
@@ -99,7 +99,7 @@ def get_year_count(year):
                 400,
             )
 
-        query = "SELECT COUNT(*) FROM stocks WHERE SUBSTR(Date, -4) = ?"
+        query = "SELECT COUNT(*) FROM stocks WHERE SUBSTRING(Date, 1, 4) = ?"
         result = execute_stock_q(query, (year,), fetch_all=False)
 
         count = result[0] if result else 0
