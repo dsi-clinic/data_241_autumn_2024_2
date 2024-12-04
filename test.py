@@ -88,8 +88,62 @@ if __name__ == "__main__":
     # Retrieve API key from environment variable
     api_key = os.environ.get("DATA_241_API_KEY")
 
-    if not api_key:
-        print("Error: The DATA_241_API_KEY environment variable is not set.")
-    else:
-        # CHECK PART 6 DOC FOR STRING LIST
-        print("Checking Done")
+
+    # CHECK PART 6 DOC FOR STRING LIST
+    #V1
+    make_get_request("/api/v1/row_by_market_count",api_key)
+    make_get_request("/api/v1/row_count",api_key)
+    make_get_request("/api/v1/unique_stock_count",api_key)
+
+
+    #V2
+    make_get_request("/api/v2/2019",api_key)
+    make_get_request("/api/v2/Open/AAPL",api_key)
+
+
+
+    #V3
+
+    #1
+    make_post_request("/api/v3/accounts",{ 'name' : 'SAWmdaodwawdwadwadwdw' }, api_key) 
+    make_get_request("/api/v3/accounts",api_key) #TESTED DONE
+    make_delete_request("/api/v3/accounts",{'account_id' : 1 }, api_key) #TESTING DONNEE
+
+    #2
+    make_post_request("/api/v3/accounts",{ 'name' : 'SAWmdaodwawdwadwadwdw' }, api_key) #TESTED DONE
+    make_get_request("/api/v3/accounts",api_key) #TESTED DONE
+    make_delete_request("/api/v3/accounts",{'account_id' : 1 }, api_key) #TESTING DONNEE
+
+    #3
+    make_post_request("/api/v3/accounts",{ 'name' : 'SAWmdaodwawdwadwadwdw' }, api_key) #TESTED DONE
+    make_get_request("/api/v3/accounts",api_key) #TESTED DONE
+    make_delete_request("/api/v3/accounts",{'account_id' : 1 }, api_key) #TESTING 
+
+    #4
+    make_post_request("/api/v3/accounts",{ 'name' : 'SAWmdaodwawdwadwadwdw' },api_key) #TESTED DONE
+    make_get_request("/api/v3/accounts/1",api_key)
+    make_delete_request("/api/v3/accounts",{'account_id' : 1 }, api_key) #TESTING DONNEE
+
+    #5
+    make_post_request("/api/v3/stocks", { 'account_id' : 2, 'symbol': 'AAME', 'purchase_date' : "01-Jan-2010", 'sale_date': "04-Jan-2010", 'number_of_shares': 10}, api_key) #TESTED DONE
+    make_get_request("/api/v3/stocks/AAME",api_key) #TESTED DONE
+    make_delete_request("/api/v3/stocks", { 'account_id' : 2, 'symbol': 'AAME', 'purchase_date' : "01-Jan-2010", 'sale_date': "04-Jan-2010", 'number_of_shares': 10}, api_key)
+
+    #6
+    make_post_request("/api/v3/stocks", { 'account_id' : 2, 'symbol': 'AAME', 'purchase_date' : "01-Jan-2010", 'sale_date': "04-Jan-2010", 'number_of_shares': 10}, api_key) #TESTED DONE
+    make_get_request("/api/v3/stocks/AAME",api_key) #TESTED DONE
+    make_delete_request("/api/v3/stocks", { 'account_id' : 2, 'symbol': 'AAME', 'purchase_date' : "01-Jan-2010", 'sale_date': "04-Jan-2010", 'number_of_shares': 10}, api_key)
+
+    #7
+    make_post_request("/api/v3/stocks", { 'account_id' : 2, 'symbol': 'AAME', 'purchase_date' : "01-Jan-2010", 'sale_date': "04-Jan-2010", 'number_of_shares': 10}, api_key) #TESTED DONE
+    make_get_request("/api/v3/stocks/AAME",api_key) #TESTED DONE
+    make_delete_request("/api/v3/stocks", { 'account_id' : 2, 'symbol': 'AAME', 'purchase_date' : "01-Jan-2010", 'sale_date': "04-Jan-2010", 'number_of_shares': 10}, api_key)
+
+    #8
+    make_post_request("/api/v3/stocks", { 'account_id' : 2, 'symbol': 'AAME', 'purchase_date' : "01-Jan-2010", 'sale_date': "04-Jan-2010", 'number_of_shares': 10}, api_key) #TESTED DONE
+    make_post_request("/api/v3/stocks", { 'account_id' : 2, 'symbol': 'AAME', 'purchase_date' : "03-Jan-2011", 'sale_date': "02-Jan-2012", 'number_of_shares': 10}, api_key) #TESTED DONE
+    make_get_request("/api/v3/accounts/return/2",api_key)
+    make_delete_request("/api/v3/stocks", { 'account_id' : 2, 'symbol': 'AAME', 'purchase_date' : "01-Jan-2010", 'sale_date': "04-Jan-2010", 'number_of_shares': 10}, api_key)
+    make_delete_request("/api/v3/stocks", { 'account_id' : 2, 'symbol': 'AAME', 'purchase_date' : "03-Jan-2011", 'sale_date': "02-Jan-2012", 'number_of_shares': 10}, api_key)
+
+    print("Checking Done")

@@ -4,13 +4,14 @@ import logging
 import os
 from functools import wraps
 import time
-from logger_utils.custom_logger import custom_logger
-from flask import abort, request
+from stock_app.api.logger_utils.custom_logger import custom_logger
+from flask import abort, request, Response
 
 def log_route(func):
     """
     Decorator to log route details, including response time, request/response details, and status codes.
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         start_time = time.time()
 
@@ -23,19 +24,29 @@ def log_route(func):
         # Execute the route function
         response = func(*args, **kwargs)
 
+        # Handle tuple or Response
+        if isinstance(response, tuple):
+            response_body, status_code = response
+            if not isinstance(response_body, Response):  # Handle non-Response bodies
+                response_obj = Response(response_body, status=status_code)
+            else:
+                response_obj = response_body
+        else:
+            response_obj = response  # Assume it's already a Response object
+
         # Calculate duration
         duration = time.time() - start_time
         custom_logger.debug(f"Response Time: {duration:.2f} seconds")
 
         # Log response details
         custom_logger.debug(
-            f"Response: Status={response.status_code}, Body={response.get_data(as_text=True)}"
+            f"Response: Status={response_obj.status_code}, Body={response_obj.get_data(as_text=True)}"
         )
 
         # Log non-2xx responses
-        if response.status_code >= 300:
+        if response_obj.status_code >= 300:
             custom_logger.info(
-                f"Non-2xx Response: Path={request.path}, Status={response.status_code}"
+                f"Non-2xx Response: Path={request.path}, Status={response_obj.status_code}"
             )
 
         return response

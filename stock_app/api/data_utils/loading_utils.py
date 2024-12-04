@@ -189,8 +189,9 @@ def load_csv_to_db(conn, zip_path, table_name):
     """
     with zipfile.ZipFile(zip_path, "r") as zf:
         file_list = zf.namelist()
+        file_list = file_list[:2]
         for csv_file in file_list:
-            start_time = time.time()
+            
             
             with zf.open(csv_file) as f:
                 text_file = io.TextIOWrapper(f, encoding="utf-8")
@@ -205,9 +206,6 @@ def load_csv_to_db(conn, zip_path, table_name):
                 cur = conn.cursor()
                 cur.executemany(insert_sql, reader)
                 conn.commit()
-
-            duration = time.time() - start_time
-            custom_logger.debug(f"Loaded data from {csv_file} ({market_name}) into {table_name} in {duration:.2f} seconds.")
 
 # __________________________________________________
 

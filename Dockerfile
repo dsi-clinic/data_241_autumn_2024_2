@@ -2,7 +2,7 @@
 FROM python:3.11.5-bookworm
 
 # Set the working directory inside the container
-WORKDIR /app
+WORKDIR /app/src
 
 # Copy the requirements.txt file and install dependencies
 COPY requirements.txt .
@@ -17,6 +17,7 @@ RUN apt-get install -y --no-install-recommends sqlite3
 # Set environment variables
 ENV PYTHONUNBUFFERED=1
 ENV FLASK_APP=app
+ENV PYTHONPATH=/app/src
 
 # Expose port 4000 for Flask
 EXPOSE 4000
