@@ -7,7 +7,7 @@ import sqlite3
 import zipfile
 from os import listdir
 from pathlib import Path
-from logger_utils.custom_logger import custom_logger 
+from stock_app.api.logger_utils.custom_logger import custom_logger
 import time
 
 DB_PATH = "/app/src/data/stocks.db"
