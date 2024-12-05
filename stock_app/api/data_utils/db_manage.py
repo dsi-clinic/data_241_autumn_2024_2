@@ -16,7 +16,7 @@ def execute_command(command_name, task):
     """Logs the start, end, and duration of a manage_db command."""
     custom_logger.info(f"Command '{command_name}' started.")
     start_time = time.time()
-    
+
     try:
         task()  # Execute the command logic
     except Exception as e:
@@ -27,7 +27,6 @@ def execute_command(command_name, task):
         custom_logger.info(
             f"Command '{command_name}' completed in {duration:.2f} seconds."
         )
-
 
 
 if __name__ == "__main__":
@@ -49,4 +48,3 @@ if __name__ == "__main__":
         execute_command("db_rm", rm_db)
     elif args.command == "db_clean":
         execute_command("db_clean", db_clean)
-

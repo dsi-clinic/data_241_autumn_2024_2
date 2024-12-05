@@ -16,6 +16,7 @@ def log_route(func):
 
     Logs response time, request/response details, and status codes.
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         custom_logger.debug(
@@ -29,7 +30,7 @@ def log_route(func):
 
         if isinstance(response, tuple):
             response_body, status_code = response
-            if not isinstance(response_body, Response):  
+            if not isinstance(response_body, Response):
                 response_obj = Response(response_body, status=status_code)
             else:
                 response_obj = response_body
@@ -58,20 +59,17 @@ def authenticate_request(func):
 
     Verifies the presence of a valid API key in the request headers.
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         api_key = request.headers.get("DATA-241-API-KEY")
         expected_api_key = os.environ.get("DATA_241_API_KEY")
 
         if not api_key:
-            custom_logger.warning(
-                f"Missing API key for route {request.path}."
-            )
+            custom_logger.warning(f"Missing API key for route {request.path}.")
             abort(401, description="Missing API key.")
         elif api_key != expected_api_key:
-            custom_logger.warning(
-                f"Invalid API key for route {request.path}."
-            )
+            custom_logger.warning(f"Invalid API key for route {request.path}.")
             abort(401, description="Unauthorized: Invalid API key.")
 
         return func(*args, **kwargs)

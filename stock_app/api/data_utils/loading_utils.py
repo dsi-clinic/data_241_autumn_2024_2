@@ -98,7 +98,7 @@ def create_stocks_db():
             Close REAL,
             Volume INTEGER
         )
-        """
+        """,
     )
 
     create_table(
@@ -108,7 +108,7 @@ def create_stocks_db():
             id INTEGER PRIMARY KEY,
             name TEXT NOT NULL
         )
-        """
+        """,
     )
 
     create_table(
@@ -121,7 +121,7 @@ def create_stocks_db():
             sale_date DATE NOT NULL,
             number_of_shares INTEGER NOT NULL
         )
-        """
+        """,
     )
 
     conn.close()
