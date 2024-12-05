@@ -7,7 +7,10 @@ import sqlite3
 from flask import Response, jsonify, request
 
 from stock_app.api.data_utils.loading_utils import execute_stock_q
-from stock_app.api.route_utils.decorators import authenticate_request, log_route
+from stock_app.api.route_utils.decorators import (
+    authenticate_request,
+    log_route,
+)
 
 # Path to SQLite database
 DB_PATH = "/app/src/data/stocks.db"
@@ -187,7 +190,6 @@ def get_stock_data(symbol):
 
 def add_stock_data():
     """Adds new stock data to the database."""
- 
     try:
         # Parse and validate JSON input
         data = request.get_json()

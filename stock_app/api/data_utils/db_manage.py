@@ -1,14 +1,16 @@
 """Manages and routes the make commands"""
 
 import argparse
-from stock_app.api.logger_utils.custom_logger import custom_logger
 import time
+
 from stock_app.api.data_utils.loading_utils import (
     create_stocks_db,
     db_clean,
     load_all_stock_data,
     rm_db,
 )
+from stock_app.api.logger_utils.custom_logger import custom_logger
+
 
 def execute_command(command_name, task):
     """Logs the start, end, and duration of a manage_db command."""
@@ -22,7 +24,10 @@ def execute_command(command_name, task):
         raise
     finally:
         duration = time.time() - start_time
-        custom_logger.info(f"Command '{command_name}' completed in {duration:.2f} seconds.")
+        custom_logger.info(
+            f"Command '{command_name}' completed in {duration:.2f} seconds."
+        )
+
 
 
 if __name__ == "__main__":

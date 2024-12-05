@@ -7,7 +7,10 @@ import pandas as pd
 from flask import jsonify
 
 from stock_app.api.data_utils.loading_utils import execute_stock_q
-from stock_app.api.route_utils.decorators import authenticate_request, log_route
+from stock_app.api.route_utils.decorators import (
+    authenticate_request,
+    log_route,
+)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
