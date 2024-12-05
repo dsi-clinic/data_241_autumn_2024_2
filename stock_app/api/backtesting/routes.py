@@ -94,13 +94,9 @@ def calc_backtest():
     val_two_df = stock_range_df[["Symbol", "Date", col_two]].rename(
         columns={"Date": "val_two_day", col_two: "val_two_target"}
     )
-    merged_df = (
-    stock_range_df.merge(
+    merged_df = stock_range_df.merge(
         val_one_df, on=["Symbol", "val_one_day"], how="left"
-    ).merge(
-        val_two_df, on=["Symbol", "val_two_day"], how="left"
-    )
-)
+    ).merge(val_two_df, on=["Symbol", "val_two_day"], how="left")
 
     # Filter for valid start-to-end date range
     start_to_end = pd.date_range(start=start_date, end=end_date)
@@ -122,7 +118,7 @@ def calc_backtest():
         elif (
             operator == "LTE"
             and row["val_one_target"] <= row["val_two_target"]
-            ):
+        ):
             day_total = (
                 row["Close"] - row["Open"]
                 if purchase_type == "B"
@@ -145,6 +141,7 @@ def register_routes4(app):
     Args:
         app (Flask): The Flask application instance.
     """
+
     @app.route("/api/v4/back_test", methods=["POST"])
     @log_route
     @authenticate_request

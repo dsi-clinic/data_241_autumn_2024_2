@@ -211,7 +211,6 @@ def add_stock_data():
         purchase_date_v = data.get("purchase_date")
         sale_date_v = data.get("sale_date")
         number_of_shares_v = data.get("number_of_shares")
-    
 
         # Validate purchase and sale dates
         purchase_date_query = """
@@ -231,11 +230,10 @@ def add_stock_data():
         sale_date_in_stock = execute_stock_q(
             sale_date_query, (sale_date_v,), fetch_all=False
         )
-  
+
         if not purchase_date_in_stock or not sale_date_in_stock:
             return jsonify({"error": "Invalid date"}), 400
 
-        
         # Insert new stock data
         insert_query = """
         INSERT INTO stocks_owned (
