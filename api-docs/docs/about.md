@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us</title>
+    <title>About Us - Team API Docs</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         body {
@@ -18,24 +18,24 @@
         .container {
             max-width: 800px;
             margin: 50px auto;
-            padding: 20px;
+            padding: 30px;
             background-color: #ffffff;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
         }
 
         h1 {
             text-align: center;
             color: #222;
             font-weight: 700;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             background: linear-gradient(to right, #6a11cb, #2575fc);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .bio-section {
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             padding-bottom: 20px;
             border-bottom: 1px solid #ddd;
         }
@@ -53,15 +53,20 @@
         .bio-section p {
             margin: 0;
             color: #555;
+            text-align: justify;
         }
 
         footer {
             text-align: center;
-            margin-top: 20px;
-            padding: 10px;
+            margin-top: 30px;
+            padding: 15px;
             background-color: #f4f4f9;
             color: #777;
             border-top: 1px solid #ddd;
+        }
+
+        footer p {
+            margin: 0;
         }
     </style>
 </head>
@@ -71,22 +76,22 @@
 
         <div class="bio-section">
             <h2>Disha Mohta</h2>
-            <p>Disha is a senior at the University of Chicago, studying Economics and Data Science. She has a diverse background, having grown up in Singapore, India, and Indonesia before moving to the U.S. for college. Her interests include badminton, growth equity, and exploring innovative financial solutions.</p>
+            <p>Disha is a senior at the University of Chicago, majoring in Economics and Data Science. Having grown up in Singapore, India, and Indonesia, she brings a unique global perspective to her work. Her passions include badminton, growth equity, and leveraging innovative financial solutions to scale businesses.</p>
         </div>
 
         <div class="bio-section">
             <h2>Ken Lew</h2>
-            <p>Ken is a software developer and a technology enthusiast with a keen interest in artificial intelligence. She loves solving challenging problems and enjoys sharing knowledge through teaching and writing.</p>
+            <p>Ken is a senior at the University of Chicago, pursuing a degree in Molecular Engineering. With a strong passion for problem-solving and neuroscience research, Ken also enjoys staying active through regular workouts at the gym.</p>
         </div>
 
         <div class="bio-section">
             <h2>Ishani Raj</h2>
-            <p>John is a data analyst with expertise in financial modeling and predictive analytics. In his free time, he enjoys hiking, photography, and experimenting with new cuisines.</p>
+            <p>Ishani is a junior at the University of Edinburgh, bringing enthusiasm and curiosity to her academic and personal endeavors. Her interests include exploring interdisciplinary connections and collaborative projects.</p>
         </div>
 
         <div class="bio-section">
             <h2>Anuj Agarwal</h2>
-            <p>John is a data analyst with expertise in financial modeling and predictive analytics. In his free time, he enjoys hiking, photography, and experimenting with new cuisines.</p>
+            <p>Anuj is a skilled data analyst specializing in financial modeling and predictive analytics. Outside of work, he enjoys hiking scenic trails, capturing moments through photography, and experimenting with culinary arts.</p>
         </div>
 
         <footer>
