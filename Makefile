@@ -5,7 +5,7 @@ DB_PATH=/app/src/data/stocks.db # CHECK
 
 # Define phony targets to avoid conflicts with files named build, notebook, etc.
 .PHONY: build interactive notebook flask \
-	db_clean db_create db_load db_rm 
+	db_clean db_create db_load db_rm autodoc
 
 COMMON_DOCKER_FLAGS= \
 	-v $(shell pwd):/app/src \
@@ -14,7 +14,7 @@ COMMON_DOCKER_FLAGS= \
 	-e FLASK_ENV=development \
 	-e DB_PATH=$(DB_PATH) \
 	-e DATA_DIR=/app/src/data \
-	-e PYTHONPATH=/app/src \
+	-e PYTHONPATH=/app/src
 
 # Build the Docker image
 build:
@@ -60,3 +60,10 @@ db_rm: build
 db_clean: build
 	docker run $(COMMON_DOCKER_FLAGS) $(IMAGE_NAME) \
 		python /app/src/stock_app/api/data_utils/db_manage.py db_clean
+
+# Serve the MkDocs documentation
+autodoc: build
+	docker run -it -p 4040:4040 \
+		-v $(shell pwd):/app/src \
+		$(IMAGE_NAME) \
+		mkdocs serve --dev-addr 0.0.0.0:4040 -f /app/src/api-docs/mkdocs.yml
