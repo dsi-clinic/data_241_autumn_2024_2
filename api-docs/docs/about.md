@@ -81,17 +81,17 @@
 
         <div class="bio-section">
             <h2>Ken Lew</h2>
-            <p>Ken is a senior at the University of Chicago, pursuing a degree in Molecular Engineering. With a strong passion for problem-solving and neuroscience research, Ken also enjoys staying active through regular workouts at the gym.</p>
+            <p>KKen is a 4th year molecular engineering undergraduate. He's interested in contributing to different fields.</p>
         </div>
 
         <div class="bio-section">
             <h2>Ishani Raj</h2>
-            <p>Ishani is a junior at the University of Edinburgh, bringing enthusiasm and curiosity to her academic and personal endeavors. Her interests include exploring interdisciplinary connections and collaborative projects.</p>
+            <p>Ishani is a computer science undergraduate at the University of Edinburgh, doing her 3rd year as an exchange student at the University of Chicago. She is interested in driving innovation across various sectors.</p>
         </div>
 
         <div class="bio-section">
             <h2>Anuj Agarwal</h2>
-            <p>Anuj is a skilled data analyst specializing in financial modeling and predictive analytics. Outside of work, he enjoys hiking scenic trails, capturing moments through photography, and experimenting with culinary arts.</p>
+            <p>Anuj is a 4th year undergraduate in UChicago’s data science department. He’s interested in Human-Computer Interaction and Artificial Intelligence.</p>
         </div>
 
         <footer>
