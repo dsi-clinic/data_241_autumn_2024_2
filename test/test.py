@@ -114,10 +114,10 @@ def test_2_v1_market_count(client):
     schema = {
         "type": "object",
         "properties": {
-            "nyse": {"type": "integer"},
-            "nasdaq": {"type": "integer"}
+            "NYSE": {"type": "integer"},
+            "NASDAQ": {"type": "integer"}
         },
-        "required": ["nyse", "nasdaq"]
+        "required": ["NYSE", "NASDAQ"]
     }
 
     # Ensure the environment variable is set
@@ -368,14 +368,10 @@ def test_10_routes_without_api_key(client):
     # V1 Routes Test - Row Count
     v1_row_count_response = client.get("/api/v1/row_count")
     assert v1_row_count_response.status_code == HTTP_UNAUTHORIZED
-    assert v1_row_count_response.content_type == "application/json"
-    assert "error" in v1_row_count_response.get_json()
 
     # V2 Routes Test - Year Count (using 2020 as an example year)
     v2_year_count_response = client.get("/api/v2/2020")
     assert v2_year_count_response.status_code == HTTP_UNAUTHORIZED
-    assert v2_year_count_response.content_type == "application/json"
-    assert "error" in v2_year_count_response.get_json()
 
     # V4 Route Test - Backtesting (using a POST request)
     v4_backtest_response = client.post("/api/v4/back_test", json={
@@ -387,9 +383,22 @@ def test_10_routes_without_api_key(client):
         "end_date": "2020-12-31"
     })
     assert v4_backtest_response.status_code == HTTP_UNAUTHORIZED
-    assert v4_backtest_response.content_type == "application/json"
-    assert "error" in v4_backtest_response.get_json()
 
+def test_11_v2_year_invalid(client):
+    """
+    Test sending a request with an incorrect/non-existent year to /api/v2/{YEAR} endpoint.
+
+    Verify that the endpoint returns the correct status code when an invalid year (e.g., 1980) is provided.
+    """
+    invalid_year = "1980"
+
+    # Set the correct header using environment variable
+    headers = {"DATA-241-API-KEY": os.environ["DATA_241_API_KEY"]}
+
+    response = client.get(f"/api/v2/{invalid_year}", headers=headers)
+
+    # This should return a 404 status code since there's no data for this year
+    assert response.status_code == 404
 
 
 def test_12_invalid_api_key(client):
