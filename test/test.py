@@ -390,7 +390,7 @@ def test_11_v2_year_invalid(client):
 
     Verify that the endpoint returns the correct status code when an invalid year (e.g., 1980) is provided.
     """
-    invalid_year = "1980"
+    invalid_year = 1980
 
     # Set the correct header using environment variable
     headers = {"DATA-241-API-KEY": os.environ["DATA_241_API_KEY"]}
@@ -431,6 +431,41 @@ def test_12_invalid_api_key(client):
     )
     assert v4_response.status_code == 401
 
+
+def test_13_explict_test(client):
+    """Test the /api/v4/back_test endpoint with a POST request against calculated value."""
+
+
+    expected_response = {'return': 2059.37, 'num_observations': 2033}
+
+
+    os.environ["DATA_241_API_KEY"] = "disha"
+
+
+    headers = {"DATA-241-API-KEY": "disha"}
+
+
+    payload = {
+    "value_1" : "O1",
+    "value_2" : "C1",
+    "operator" : "LT",
+    "purchase_type": "B",
+    "start_date": "2020-01-03",
+    "end_date": "2020-01-03"
+    }
+
+    response = client.post("/api/v4/back_test", headers=headers, json=payload)
+    assert response.status_code == 200
+    assert response.content_type == "application/json"
+
+
+    actual_response = response.get_json()
+    assert "return" in actual_response
+    assert "num_observations" in actual_response
+    assert isinstance(actual_response["return"], float)
+    assert isinstance(actual_response["num_observations"], int)
+    assert actual_response["return"] == expected_response["return"]
+    assert actual_response["num_observations"] == expected_response["num_observations"]
 
 
 

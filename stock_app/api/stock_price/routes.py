@@ -5,7 +5,7 @@ import sqlite3
 
 import pandas as pd
 from flask import jsonify
-
+from flask import Response
 from stock_app.api.data_utils.loading_utils import execute_stock_q
 from stock_app.api.route_utils.decorators import (
     authenticate_request,
@@ -107,7 +107,7 @@ def get_year_count(year):
 
         count = result[0] if result else 0
         if int(count) == 0:
-            return jsonify({"error": "No data for that year"}), 404
+            return Response(status=404)
         else:
             return jsonify({"year": int(year), "count": int(count)}), 200
 
