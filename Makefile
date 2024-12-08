@@ -9,7 +9,7 @@ DB_PATH=/app/src/data/stocks.db # CHECK
 
 COMMON_DOCKER_FLAGS= \
 	-v $(shell pwd):/app/src \
-	-e FLASK_APP=/app/src/app.py \
+	-e FLASK_APP=/app/src/flask_app.py \
 	-e FLASK_DEBUG=1 \
 	-e FLASK_ENV=development \
 	-e DB_PATH=$(DB_PATH) \
@@ -38,7 +38,7 @@ notebook: build
 # Start the Flask server on port 4000
 flask: build
 	docker run -p 4000:4000 \
-		-e FLASK_APP=/app/src/app.py \
+		-e FLASK_APP=/app/src/flask_app.py \
 		-e FLASK_DEBUG=1 \
 		-e FLASK_ENV=development \
 		-e DATA_241_API_KEY=$(DATA_241_API_KEY) \
@@ -67,3 +67,9 @@ autodoc: build
 		-v $(shell pwd):/app/src \
 		$(IMAGE_NAME) \
 		mkdocs serve --dev-addr 0.0.0.0:4040 -f /app/src/api-docs/mkdocs.yml
+
+test: build
+	docker run \
+	$(COMMON_DOCKER_FLAGS) \
+	$(IMAGE_NAME) \
+	pytest --cov=app /app/src/test/test.py --cov-report=term-missing -v
