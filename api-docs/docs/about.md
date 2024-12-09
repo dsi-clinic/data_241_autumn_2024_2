@@ -86,7 +86,7 @@
 
         <div class="bio-section">
             <h2>Ishani Raj</h2>
-            <p>Ishani is a computer science undergraduate at the University of Edinburgh, doing her 3rd year as an exchange student at the University of Chicago. She is interested in driving innovation across various sectors.</p>
+            <p>Ishani is a Computer Science undergraduate at the University of Edinburgh, currently in her 3rd year as an exchange student at the University of Chicago. Combining her background in computer science, mathematics, and data science with multicultural experiences across the US, UK, and India, she is passionate about problem-solving and driving innovation in cutting-edge industries.</p>
         </div>
 
         <div class="bio-section">
