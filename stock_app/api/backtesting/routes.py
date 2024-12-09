@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 
 import pandas as pd
 from flask import jsonify, request
-
+from flask import Response
 from stock_app.api.data_utils.loading_utils import execute_stock_q
 from stock_app.api.route_utils.decorators import (
     authenticate_request,
@@ -42,7 +42,7 @@ def calc_backtest():
     )
 
     if not start_date_in_stock or not end_date_in_stock:
-        return jsonify({"error": "Invalid Start / End date"}), 400
+        return Response(status=400)
 
     # Column mapping
     column_map = {"O": "Open", "C": "Close", "L": "Low", "H": "High"}
