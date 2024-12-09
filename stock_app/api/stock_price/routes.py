@@ -34,15 +34,7 @@ def get_prices(symbol, price_type):
 
         valid_price_types = {"Open", "Close", "High", "Low"}
         if price_type not in valid_price_types:
-            return (
-                jsonify(
-                    {
-                        "error": f"Invalid price type: {price_type}. "
-                        f"Allowed values: {list(valid_price_types)}"
-                    }
-                ),
-                400,
-            )
+            return Response(status=400)
 
         query = (
             f"SELECT Symbol, Date, {price_type} FROM stocks WHERE Symbol = ?"
@@ -50,10 +42,7 @@ def get_prices(symbol, price_type):
         rows = execute_stock_q(query, (symbol,))
 
         if not rows:
-            return (
-                jsonify({"error": f"Symbol '{symbol}' not found in the data"}),
-                404,
-            )
+            return Response(status=404)
 
         symbol_df = pd.DataFrame(rows, columns=["Symbol", "Date", price_type])
         symbol_df["Date"] = pd.to_datetime(
@@ -62,7 +51,7 @@ def get_prices(symbol, price_type):
 
         if symbol_df["Date"].isna().any():
             logging.error("Invalid date format detected in the database.")
-            return jsonify({"error": "Invalid date format in data"}), 500
+            return Response(status=500)
 
         price_info = symbol_df.apply(
             lambda row: {
@@ -77,11 +66,11 @@ def get_prices(symbol, price_type):
 
     except sqlite3.Error as e:
         logging.error("Database query failed: %s", e)
-        return jsonify({"error": "Failed to fetch price data"}), 500
+        return Response(status=500)
 
     except Exception as e:
         logging.error("Unexpected error: %s", e)
-        return jsonify({"error": "An unexpected error occurred"}), 500
+        return Response(status=500)
 
 
 def get_year_count(year):
@@ -95,12 +84,7 @@ def get_year_count(year):
     """
     try:
         if not year.isdigit() or len(year) != FOUR_DIGIT_YEAR_LENGTH:
-            return (
-                jsonify(
-                    {"error": "Invalid year format. Provide a 4-digit year."}
-                ),
-                400,
-            )
+            return Response(status=400)
 
         query = "SELECT COUNT(*) FROM stocks WHERE SUBSTRING(Date, 1, 4) = ?"
         result = execute_stock_q(query, (year,), fetch_all=False)
@@ -115,13 +99,13 @@ def get_year_count(year):
         logging.error(
             "Database error while fetching year count for %s: %s", year, e
         )
-        return jsonify({"error": "Failed to fetch year count"}), 500
+        return Response(status=500)
 
     except Exception as e:
         logging.error(
             "Unexpected error while fetching year count for %s: %s", year, e
         )
-        return jsonify({"error": "An unexpected error occurred"}), 500
+        return Response(status=500)
 
 
 def register_routes2(app):
@@ -133,14 +117,11 @@ def register_routes2(app):
     def price_endpoint(price_type, symbol):
         """Fetch prices for a given symbol and price type."""
         if not price_type:
-            return jsonify({"error": "Price type is required"}), 400
+            return Response(status=400)
 
         response = get_prices(symbol, price_type)
         if response is None:
-            return (
-                jsonify({"error": f"No data found for symbol {symbol}"}),
-                404,
-            )
+            return Response(status=404)
 
         return response
 

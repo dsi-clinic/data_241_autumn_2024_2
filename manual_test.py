@@ -84,13 +84,21 @@ if __name__ == "__main__":
     # Retrieve API key from environment variable
     api_key = os.environ.get("DATA_241_API_KEY")
 
-    #make_get_request("/api/v2/1980",api_key)
+    make_get_request("/api/v2/open/INVALID1",api_key)
 
+    make_get_request("/api/v2/close/INVALID2",api_key)
+
+    make_get_request("/api/v2/high/XYZ",api_key)
+
+    make_get_request("/api/v2/low/ABC",api_key)
+
+    '''
     make_post_request("/api/v4/back_test",{
     "value_1" : "O1",
     "value_2" : "C1",
     "operator" : "LT",
     "purchase_type": "B", 
-    "start_date": "2020-01-03",
-    "end_date": "2020-01-03"
+    "start_date": "1999-01-03",
+    "end_date": "32423-01-03"
     }, api_key)
+    '''
