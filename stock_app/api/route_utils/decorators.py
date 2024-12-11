@@ -3,7 +3,7 @@
 import os
 from functools import wraps
 
-from flask import Response, abort, request
+from flask import Response, abort, jsonify, request
 
 from stock_app.api.logger_utils.custom_logger import custom_logger
 
@@ -16,6 +16,7 @@ def log_route(func):
 
     Logs response time, request/response details, and status codes.
     """
+
     @wraps(func)
     def wrapper(*args, **kwargs):
         # Log the incoming request
@@ -36,7 +37,6 @@ def log_route(func):
 
             # Ensure we have a proper Response object
             if not isinstance(response_body, Response):
-                # If response_body is a dictionary, use jsonify for proper JSON response
                 if isinstance(response_body, dict):
                     response_obj = jsonify(response_body)
                 else:
@@ -67,7 +67,8 @@ def log_route(func):
             custom_logger.error(f"Failed to log response body: {e}")
 
         # Log non-2xx responses
-        if response_obj.status_code >= 400:
+        G_4XX = 400
+        if response_obj.status_code >= G_4XX:
             custom_logger.info(
                 "Non-2xx Response: "
                 f"Path={request.path}, Status={response_obj.status_code}"

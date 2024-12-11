@@ -1,4 +1,5 @@
 """Initiates flask app and stock_app routes"""
+
 import logging
 
 from flask import Flask
