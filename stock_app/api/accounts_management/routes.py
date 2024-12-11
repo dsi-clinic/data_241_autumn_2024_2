@@ -214,12 +214,12 @@ def add_stock_data():
 
         # Validate purchase and sale dates
         purchase_date_query = """
-        SELECT Date
+        SELECT Distinct Date
         FROM stocks
         WHERE Date = ?
         """
         sale_date_query = """
-        SELECT Date
+        SELECT Distinct Date
         FROM stocks
         WHERE Date = ?
         """
