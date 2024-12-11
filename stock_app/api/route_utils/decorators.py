@@ -16,9 +16,9 @@ def log_route(func):
 
     Logs response time, request/response details, and status codes.
     """
-
     @wraps(func)
     def wrapper(*args, **kwargs):
+        # Log the incoming request
         custom_logger.debug(
             "Request: "
             f"Path={request.path}, Method={request.method}, "
@@ -26,24 +26,48 @@ def log_route(func):
             f"Body={request.get_data(as_text=True)}"
         )
 
+        # Call the actual route function
         response = func(*args, **kwargs)
 
+        # Handle tuple or Response object cases
         if isinstance(response, tuple):
+            # Unpack tuple (response_body, status_code)
             response_body, status_code = response
+
+            # Ensure we have a proper Response object
             if not isinstance(response_body, Response):
-                response_obj = Response(response_body, status=status_code)
+                # If response_body is a dictionary, use jsonify for proper JSON response
+                if isinstance(response_body, dict):
+                    response_obj = jsonify(response_body)
+                else:
+                    # Wrap response_body in a Response object for other cases
+                    response_obj = Response(response_body)
+                response_obj.status_code = status_code
             else:
+                # If already a Response object, ensure status code matches
                 response_obj = response_body
+                response_obj.status_code = status_code
         else:
-            response_obj = response
+            # If response is already a Response object
+            if isinstance(response, Response):
+                response_obj = response
+            else:
+                # Handle raw responses (e.g., strings) and default status code
+                response_obj = Response(response)
+                response_obj.status_code = 200
 
-        custom_logger.debug(
-            "Response: "
-            f"Status={response_obj.status_code}, "
-            f"Body={response_obj.get_data(as_text=True)}"
-        )
+        # Log the outgoing response safely
+        try:
+            custom_logger.debug(
+                "Response: "
+                f"Status={response_obj.status_code}, "
+                f"Body={response_obj.get_data(as_text=True)}"
+            )
+        except Exception as e:
+            custom_logger.error(f"Failed to log response body: {e}")
 
-        if response_obj.status_code >= NON_2XX_THRESHOLD:
+        # Log non-2xx responses
+        if response_obj.status_code >= 400:
             custom_logger.info(
                 "Non-2xx Response: "
                 f"Path={request.path}, Status={response_obj.status_code}"

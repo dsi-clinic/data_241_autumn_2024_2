@@ -140,7 +140,6 @@ def load_csv_to_db(conn, zip_path, table_name):
         bool: True if successful.
     """
     with zipfile.ZipFile(zip_path, "r") as zf:
-        for csv_file in zf.namelist()[:10]:  # Process only the first 10 files
             with zf.open(csv_file) as f:
                 text_file = io.TextIOWrapper(f, encoding="utf-8")
                 reader = csv.reader(text_file)
