@@ -1,119 +1,118 @@
 # data_241_autumn_2024_2
-
-# Repository Setup Guide
+## Repository Setup Guide
 
 To set up and run this repository, execute the following commands in your terminal:
 
-1. make build - This should build the image from the dockerfile in your repo
+- **`make build`**: Builds the Docker image from the Dockerfile in your repository.
+- **`make interactive`**: Starts an interactive bash session with the current working directory mounted to `/app/src`.
+- **`make notebook`**: Starts a Jupyter Notebook server with the current working directory mounted to `/app/src`, with ports properly configured for external access.
+- **`make flask`**: Starts the Flask server, exposing port `4000` for API accessibility.
+- **`make db_create`**: Creates an SQLite database `stocks.db`, with a `stocks` table in the `data` folder.
+- **`make db_load`**: Loads data from zip files in `raw_data` into the SQLite database.
+- **`make db_rm`**: Removes the `stocks.db` database.
+- **`make db_clean`**: Removes, creates, and loads data into the SQLite database in one command.
 
-2. make interactive - This should start an interactive bash session with the current working directory mounted to /app/src
+---
 
-3. make notebook - This should start a notebook server with the current working directory mounted /app/src and ports properly set up so that the notebook can be accessed.
+## People
 
-4. make flask - This should start the flask server, making sure to expose port 4000 so that we can ping the API from outside the container.
+- **Anuj Agarwal**: 4th-year Undergraduate, Data Science major.
+- **Disha Mohta**: 4th-year Undergraduate, Economics and Data Science major.
+- **Ishani Raj**: 3rd-year Undergraduate exchange student.
+- **Ken Law**: 4th-year Undergraduate, MENG major.
 
-# People
+---
 
-Anuj Agarwal - 4th-year Undergraduate Data Science major
+## Folders and Files
 
-Disha Mohta - 4th-year Undergraduate Economics and Data Science major
+### **data folder**
+- Contains all project data.
+- Includes a subfolder `raw_data` with NASDAQ and NYSE_2019 zip files from 2010-2020.
 
-Ishani Raj - 3rd-year Undergraduate exchange student
+### **Dockerfile**
+- Provides a blueprint for building a consistent, isolated environment for the application.
+  - **Base Image**: Specifies a Python base image for the correct version.
+  - **Dependencies**: Installs all required Python libraries from `requirements.txt`.
+  - **Directory Setup**: Configures the `/app/src` directory for code execution.
+  - **Entrypoint**: Default configuration for running commands like `make flask` or `make notebook`.
 
-Ken Law - 4th-year Undergraduate MENG major
+### **Makefile**
+- Automates common setup and execution tasks:
+  - `make build`: Builds the Docker image.
+  - `make interactive`: Launches a bash session inside the Docker container.
+  - `make notebook`: Starts a Jupyter Notebook server.
+  - `make flask`: Starts the Flask server on port `4000`.
+  - `make db_create`: Creates the SQLite database `stocks.db`.
+  - `make db_load`: Loads stock data into the database.
+  - `make db_rm`: Deletes the `stocks.db` database.
+  - `make db_clean`: Cleans, resets, and reloads the database.
 
-# Folders and Files
+### **requirements.txt**
+- Lists all Python libraries and versions required for the project.
 
-data folder - All our data is in this folder. It contains a subfolder called raw data which contains NASDAQ, NYSE_2019 zip files from 2010-2020.
+### **stock_app folder**
+- Contains the core application.
 
+#### **app.py**
+- The main entry point for the Flask application, setting up and running the API server.
 
-DockerFile - The Dockerfile provides a blueprint for building a consistent, isolated environment in which the application can run. It includes the following configurations:
+#### **api folder**
+- Hosts all modules related to the API endpoints.
+- Organized to support versioned API management.
 
+---
 
-Base Image: Specifies a base Docker image, such as python:3.x, ensuring the correct Python version is used.
+## API Versions and Features
 
+### **basic_stocks folder**
+- Implements foundational routes for stock data operations:
+  - `/api/v1/row_by_market_count`: Returns row counts grouped by market (NASDAQ, NYSE).
+  - `/api/v1/unique_stock_count`: Returns the count of unique stock symbols.
+  - `/api/v1/row_count`: Returns the total number of rows.
 
-Dependencies: Installs all required Python libraries as listed in requirements.txt, ensuring compatibility and consistency.
+### **stock_price folder**
+- Adds routes for price details and filtering:
+  - `/api/v2/<price_type>/<symbol>`: Returns price information (Open, Close, High, Low) for a stock symbol.
+  - `/api/v2/<year>`: Returns the count of stock records for a specific year.
 
+### **accounts_management folder**
+- Introduces account management:
+  - `/api/v3/accounts`: Handles GET, POST, and DELETE for account data.
+  - `/api/v3/stocks/<symbol>`: Returns stock holdings for a specific stock symbol.
+  - `/api/v3/accounts/<acc_id>`: Returns stock holdings for a specific account ID.
+  - `/api/v3/stocks`: Handles adding and deleting stock data.
+  - `/api/v3/accounts/return/<account_id>`: Calculates the nominal return for a specific account.
 
-Directory Setup: Sets up the /app/src directory where the application code is mounted, aligning with the Makefile commands for interactive sessions and server startups.
-Entrypoint: Configures default commands or environment variables if needed for the container to run the application, typically set up for make flask or make notebook.
+### **backtesting folder**
+- Adds backtesting functionality:
+  - `/api/v4/back_test`: Handles POST requests for backtesting calculations, returning total returns and observations.
 
+---
 
-Makefile - The Makefile in this project automates common setup and execution tasks, providing an easy-to-use interface to streamline the development workflow. Below are the main commands included in the Makefile:
+## Utility Folders
 
+### **route_utils**
+- Provides decorators and utility functions for API routes (e.g., authentication and logging).
 
-make build: Builds the Docker image for the application using the Dockerfile in the repository. This prepares a container environment with all dependencies installed.
+### **data_utils**
+- Contains utilities for data parsing and database interactions.
 
+### **logger_utils**
+- Centralized configuration for custom logging.
 
-make interactive: Launches an interactive bash session inside the Docker container, mounting the current working directory to /app/src. This allows for direct interaction with the container environment, making it useful for debugging and development.
+---
 
+## Testing
 
-make notebook: Starts a Jupyter Notebook server with the current working directory mounted at /app/src and properly sets up port forwarding, allowing access to the notebook from outside the container.
+### **Test folder**
+- Contains all testing-related files.
 
+#### **test.py**
+- A Python file dedicated to running tests.
 
-make flask: Starts the Flask server in the Docker container, exposing port 4000 to make the API accessible from outside the container.
+---
 
+## Configuration Files
 
-make db_create: Creates SQLite database, stocks.db, with stocks table in data folder
-
-
-make db_load: Loads data from zip files in raw_data into SQLite database
-
-
-make db_rm: Removes stocks.db database
-
-
-make db_clean: Removes, Creates, Loads data into SQLite database in order.
-
-
-requirements.txt - All python/library versions for the project.
-
-
-stock_app - the entire app as a folder.
-
-
-app.py - The app.py file serves as the main entry point for the Flask application, responsible for setting up and running the API server. This file initializes the application and organizes the routing, ensuring a modular and organized structure for handling API requests.
-
-
-api folder - The api/ folder contains all modules related to the API endpoints of the Flask application. This folder is organized to support modular routing and versioned API management, ensuring that different versions of the API can coexist and evolve independently.
-
-
-basic_stocks folder - The basic_stocks/ directory holds the first version of the API endpoints. This version typically includes foundational routes and functionality, often setting the baseline behavior for the API. For routes providing fundamental stock data operations, like row counts, unique stock counts, and row counts by market.
-
-
-stock_price folder - The stock_price/ directory hosts the second version of the API, incorporating additional features, improvements, or refined endpoint behaviors. For routes focused on stock price details and filtering by year or symbol, emphasizing price-related data operations.
-
-
-accounts_management folder - The accounts_management/ directory holds the third version of the API endpoints. For routes managing accounts, including fetching accounts, adding/deleting accounts, and handling stock holdings associated with accounts.
-
-
-route_utils - The route_utils/ directory provides utility functions and decorators that support the API routes across versions.
-
-
-data_utils - The data_utils / directory provides utility functions that parses data that is used by the API routes.
-
-backtesting folder: The backtesting folder contains all modules and files related to the fourth version of the API, which introduces backtesting functionality for trading strategies. 
-
-
-logger_utils: Centralized configuration for the custom logging system used across the project. Defines log levels, formats, and handlers for consistent logging behavior.
-
-custom_logger.py: Has a function called setup_logging() which sets up and returns a custom logger
-
-load_utils.py - Draws data from raw_data folder. Creates, loads, deletes, data into SQLite database.
-
-routes.py - inside each folder, there is a routes.py file which basically hosts end points for different versions.
-
-decorators.py - Custom decorators for functions such as API key validation, ensuring that requests meet authentication requirements.
-
-
-Test - folder containing files for testing the code.
-
-
-test.py - dedicated python file to run and test the code.
-
-
-Pyproject.toml - toml file dictating parameters for ruff lint checking.
-
-
-.pre-commit-config.yaml - yaml configuration file that enables a ruff checking step before git commitment.
+- **`pyproject.toml`**: Defines parameters for `ruff` lint checks.
+- **`.pre-commit-config.yaml`**: Configures `ruff` pre-commit hooks for consistent code style.
