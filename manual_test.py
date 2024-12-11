@@ -1,10 +1,17 @@
 """Tests Flask server against requests"""
 
 import os
+
 import requests
 
 
 def make_get_request(endpoint, api_key):
+    """Sends a GET request to the API endpoint using the API key.
+
+    @param endpoint: str - The API endpoint to request.
+    @param api_key: str - The API key for authentication.
+    @return: Response object - The HTTP response from the server.
+    """
     base_url = "http://127.0.0.1:4000"
     full_url = base_url + endpoint
     headers = {
@@ -27,6 +34,13 @@ def make_get_request(endpoint, api_key):
 
 
 def make_post_request(endpoint, json, api_key):
+    """Sends a POST request to the API endpoint with JSON payload and API key.
+
+    @param endpoint: str - The API endpoint to request.
+    @param json: dict - The JSON payload to include in the request body.
+    @param api_key: str - The API key for authentication.
+    @return: Response object - The HTTP response from the server.
+    """
     base_url = "http://127.0.0.1:4000"
     full_url = base_url + endpoint
     headers = {
@@ -50,6 +64,13 @@ def make_post_request(endpoint, json, api_key):
 
 
 def make_delete_request(endpoint, json, api_key):
+    """Sends a DELETE request to API endpoint with JSON payload and API key.
+
+    @param endpoint: str - The API endpoint to request.
+    @param json: dict - The JSON payload to include in the request body.
+    @param api_key: str - The API key for authentication.
+    @return: Response object - The HTTP response from the server.
+    """
     base_url = "http://127.0.0.1:4000"
     full_url = base_url + endpoint
     headers = {
@@ -92,7 +113,7 @@ if __name__ == "__main__":
 
     make_get_request("/api/v2/low/ABC",api_key)
 
-    '''
+    """
     make_post_request("/api/v4/back_test",{
     "value_1" : "O1",
     "value_2" : "C1",
@@ -101,4 +122,4 @@ if __name__ == "__main__":
     "start_date": "1999-01-03",
     "end_date": "32423-01-03"
     }, api_key)
-    '''
+    """
