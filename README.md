@@ -18,7 +18,7 @@ To set up and run this repository, execute the following commands in your termin
 
 - **Anuj Agarwal**: 4th-year Undergraduate, Data Science major.
 - **Disha Mohta**: 4th-year Undergraduate, Economics and Data Science major.
-- **Ishani Raj**: 3rd-year Undergraduate exchange student.
+- **Ishani Raj**: 3rd-year Undergraduate, Computer Science major.
 - **Ken Law**: 4th-year Undergraduate, MENG major.
 
 ---
